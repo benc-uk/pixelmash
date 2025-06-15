@@ -12,7 +12,7 @@ Alpine.data('app', () => ({
   async init() {
     initRendering()
 
-    _fakeImageLoad(333)
+    _fakeImageLoad('kitty.jpg')
 
     console.log('🎉 Alpine.js initialized and rendering started')
   },
