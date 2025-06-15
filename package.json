@@ -13,7 +13,7 @@
     "lint": "eslint ./app/",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "types": "swc ./app/ --out-dir ./tmp/"
+    "clean": "rm -rf dist tmp node_modules package-lock.json && npm install"
   },
   "devDependencies": {
     "eslint": "^9.29.0",

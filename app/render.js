@@ -1,5 +1,5 @@
 import * as twgl from 'twgl.js'
-import vertShader from '../shaders/base.vert.glsl?raw'
+import vertShader from '../assets/shaders/base.vert.glsl?raw'
 
 let gl
 let texture

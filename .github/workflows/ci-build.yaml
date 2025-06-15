@@ -35,7 +35,8 @@ jobs:
 
       - name: Check types
         run: |
-          npm install typescript       
+          npm install typescript 
+          echo "Checking types..."      
           npx tsc --noEmit
 
   deploy:

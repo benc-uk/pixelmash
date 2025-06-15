@@ -1,51 +1,57 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pixel Mash</title>
-    <script type="module" src="/app/main.js"></script>
-    <link rel="shortcut icon" href="icon.png" type="image/png" />
-  </head>
 
-  <body x-data="app">
-    <nav>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pixel Mash</title>
+  <script type="module" src="/app/main.js"></script>
+  <link rel="shortcut icon" href="icon.png" type="image/png" />
+</head>
+
+<body x-data="app">
+  <nav>
+    <section>
+      <b>Source</b>
+      <select x-model="sourceType">
+        <option disabled selected>Choose source</option>
+        <option value="image">Image</option>
+        <option disabled>Generators:</option>
+        <option value="noise">Noise</option>
+        <option value="gradient">Gradient</option>
+        <option value="squares">Squares</option>
+        <option value="circles">Circles</option>
+        <option value="lines">Lines</option>
+      </select>
+      <form id="source-options" x-show="sourceType === 'image'" class="m1">
+        <input type="file" accept="image/*" @change="load($event)" />
+      </form>
+    </section>
+
+    <template x-for="(effect, index) in effects" :key="index">
       <section>
-        <b>Source</b>
-        <select x-model="sourceType">
-          <option disabled selected>Choose source</option>
-          <option value="image">Image</option>
-          <option disabled>Generators:</option>
-          <option value="noise">Noise</option>
-          <option value="gradient">Gradient</option>
-          <option value="squares">Squares</option>
-          <option value="circles">Circles</option>
-          <option value="lines">Lines</option>
-        </select>
-        <form id="source-options" x-show="sourceType === 'image'" class="m1">
-          <input type="file" accept="image/*" @change="load($event)" />
+        <b x-text="`Effect: ${index+1}`"></b>
+        <form>
+          <label for="effect-type">Goatiness</label>
+          <input type="range" min="0" max="100" />
+          <label for="effect-type">Magic</label>
+          <input type="range" min="0" max="100" />
         </form>
       </section>
+    </template>
 
-      <template x-for="(effect, index) in effects" :key="index">
-        <section>
-          <b x-text="`Effect: ${index+1}`"></b>
-          <form>
-            <label for="effect-type">Goatiness</label>
-            <input type="range" min="0" max="100" />
-            <label for="effect-type">Magic</label>
-            <input type="range" min="0" max="100" />
-          </form>
-        </section>
-      </template>
+    <div>
+      <button class="wide" @click="addEffect">Add Effect</button>
+    </div>
+  </nav>
 
-      <div class="m2">
-        <button class="w100" @click="addEffect">Add Effect</button>
-      </div>
-    </nav>
+  <main x-ref="canvasContainer">
+    <canvas width="800" height="600"></canvas>
+    <!-- overlay note telling users to drag and drop images -->
+    <div class="overlay" x-show="!sourceLoaded">
+      Drag and drop any image here to start
+    </div>
+  </main>
+</body>
 
-    <main>
-      <canvas width="800" height="600"></canvas>
-    </main>
-  </body>
 </html>
