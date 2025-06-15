@@ -1,8 +1,9 @@
 import '../assets/style.css'
 import '../assets/helpers.css'
 
-import { init as initRendering, setSource, setRedness, setScanlineCount, setScanlineSize } from './render'
+import { getGL, init as initRendering, setSource } from './render'
 import Alpine from 'alpinejs'
+import { createEffect } from './effects'
 
 Alpine.data('app', () => ({
   sourceType: 'image',
@@ -12,39 +13,13 @@ Alpine.data('app', () => ({
   effects: [],
 
   async init() {
-    initRendering()
+    this.$store.effects = []
 
-    // TEMP: While developing, bootstrap some stuff for testing
-    _fakeImageLoad('img/kitty.jpg')
-    this.effects.push({
-      name: 'redizer',
-      params: {
-        redness: {
-          value: 1.2,
-          min: 0,
-          max: 4,
-          step: 0.01,
-        },
-      },
-    })
-    this.effects.push({
-      name: 'scanlines',
-      params: {
-        count: {
-          value: 600,
-          min: 100,
-          max: 1000,
-          step: 10,
-        },
-        size: {
-          value: 1,
-          min: 0.01,
-          max: 5,
-          step: 0.01,
-        },
-      },
-    })
-    this.sourceLoaded = true
+    // Debug when running in dev mode
+    if (import.meta.env.DEV) {
+      loadFromURL('img/kitty.jpg')
+      this.sourceLoaded = true
+    }
 
     // Drag and drop support
     const container = this.$refs.canvasContainer
@@ -56,72 +31,68 @@ Alpine.data('app', () => ({
       container.addEventListener('drop', async (e) => {
         e.preventDefault()
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          await loadImageFile({ target: { files: e.dataTransfer.files } })
+          await loadImageFile(e.dataTransfer.files[0])
           this.sourceLoaded = true
         }
       })
     }
 
+    initRendering()
     console.log('🎉 Alpine.js initialized and rendering started')
   },
 
   addEffect() {
-    this.effects.push({
-      name: 'new-effect',
-      params: {
-        param1: {
-          value: 0.5,
-          min: 0,
-          max: 1,
-        },
-        param2: {
-          value: 1,
-          min: 0,
-          max: 10,
-        },
-      },
-    })
+    const effect = createEffect('colourize', getGL())
+    this.$store.effects.push(effect)
   },
 
-  paramChange(effect) {
-    if (effect.name === 'redizer') {
-      setRedness(effect.params.redness.value)
-    } else if (effect.name === 'scanlines') {
-      setScanlineCount(effect.params.count.value)
-      setScanlineSize(effect.params.size.value)
+  /**
+   * Load an image from a file input
+   * @param {Event} event
+   */
+  async fileInputImage(event) {
+    const fileInput = /** @type {HTMLInputElement} */ (event.target)
+    if (!fileInput) {
+      console.warn('No file input found or no files selected')
+      return
     }
-  },
 
-  /** @param {Event} event */
-  async loadImage(event) {
-    await loadImageFile(event)
+    if (!fileInput.files || fileInput.files.length === 0) {
+      console.warn('No file selected')
+      return
+    }
+
+    const file = fileInput.files[0]
+    await loadImageFile(file)
     this.sourceLoaded = true
   },
 }))
 
 Alpine.start()
 
-/** @param {string} name */
-async function _fakeImageLoad(name) {
-  console.log(`🔍 Faking image load for: ${name}`)
-
-  // Fake a file input change to trigger the initial image load
-  const res = await fetch(name)
+/** @param {string} imageURL */
+async function loadFromURL(imageURL) {
+  const res = await fetch(imageURL)
   const blob = await res.blob()
-  const file = new File([blob], name, { type: 'image/jpeg' })
-  loadImageFile({ target: { files: [file] } })
+  const file = new File([blob], imageURL, { type: 'image/jpeg' })
+  loadImageFile(file)
 }
 
-async function loadImageFile(event) {
-  const file = event.target.files[0]
-
+/**
+ * Load an image file and set it as the source for rendering
+ * @param {File} file
+ */
+async function loadImageFile(file) {
   if (file) {
     const reader = new FileReader()
     reader.onload = async (e) => {
+      // Decode the data into an image, only to give us width and height
       const img = new Image()
       img.onload = async () => {
-        await setSource(e.target?.result, img.width, img.height)
+        const base64ImgData = /** @type {string} */ (e.target?.result)
+        await setSource(base64ImgData, img.width, img.height)
       }
+
       img.src = /** @type {string} */ (e.target?.result)
     }
 

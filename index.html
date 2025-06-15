@@ -23,11 +23,11 @@
           <option value="lines">Lines</option>
         </select>
         <form id="source-options" x-show="sourceType === 'image'" class="m1">
-          <input type="file" accept="image/*" @change="loadImage($event)" />
+          <input type="file" accept="image/*" @change="fileInputImage($event)" />
         </form>
       </section>
 
-      <template x-for="(effect, index) in effects" :key="index">
+      <template x-for="(effect, index) in $store.effects" :key="index">
         <section>
           <b x-text="effect.name"></b>
           <form>
@@ -41,9 +41,6 @@
                   :min="effect.params[name].min"
                   :max="effect.params[name].max"
                   :step="effect.params[name].step"
-                  :name="name"
-                  @change="paramChange(effect, name, effect.params[name].value)"
-                  :id="name + '-' + index"
                 />
               </div>
             </template>
@@ -57,7 +54,7 @@
     </nav>
 
     <main x-ref="canvasContainer">
-      <canvas width="800" height="600"></canvas>
+      <canvas width="800" height="600" x-ref="canvas"></canvas>
       <!-- overlay note telling users to drag and drop images -->
       <div class="overlay" x-show="!sourceLoaded">Drag and drop any image here to start</div>
     </main>

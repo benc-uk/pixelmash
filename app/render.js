@@ -1,50 +1,29 @@
 import * as twgl from 'twgl.js'
+import Alpine from 'alpinejs'
 import vertShader from '../assets/shaders/base.vert.glsl?raw'
 
 let gl
 let texture
-let programInfo1
-let programInfo2
-let framebuffer1
 let bufferInfo
+let passThroughProgInfo
 
-let redness = 1.2 // Default redness value
-let scanlineCount = 700
-let scanlineBright = 1.0
-
-const fragShaderPass1 = `#version 300 es 
+const fragShaderPassthrough = `#version 300 es 
 precision highp float;
-
 in vec2 imgcoord;
-uniform float redness;
 uniform sampler2D image;
 out vec4 fragColor;
-
 void main() {
-  vec4 pixel = texture(image, imgcoord);
-  // make reddish
-  pixel.r = pixel.r * redness;
-  pixel.g = pixel.g * 0.2;
-  pixel.b = pixel.b * 0.5;
-  fragColor = pixel;
+  fragColor = texture(image, imgcoord);
 }`
 
-const fragShaderPass2 = `#version 300 es 
-precision highp float;
+export function getGL() {
+  if (!gl) {
+    console.error('💥 WebGL2 context not initialized!')
+    return null
+  }
 
-in vec2 imgcoord;
-uniform float scanlineCount;
-uniform float scanlineBright;
-uniform sampler2D image;
-out vec4 fragColor;
-
-void main() {
-  // fake scanline effect
-  vec4 pixel = texture(image, imgcoord);
-  float scanline = 0.5 + scanlineBright * sin(imgcoord.y * scanlineCount);
-  pixel.rgb *= scanline;
-  fragColor = pixel;
-}`
+  return gl
+}
 
 export async function init() {
   const canvas = document.querySelector('canvas')
@@ -61,41 +40,28 @@ export async function init() {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
   console.log('🎨 WebGL2 initialized successfully')
 
-  programInfo1 = twgl.createProgramInfo(gl, [vertShader, fragShaderPass1])
-  programInfo2 = twgl.createProgramInfo(gl, [vertShader, fragShaderPass2])
+  passThroughProgInfo = twgl.createProgramInfo(gl, [vertShader, fragShaderPassthrough])
   bufferInfo = twgl.createBufferInfoFromArrays(gl, {
     position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
   })
-
-  // First pass into a framebuffer
-  framebuffer1 = twgl.createFramebufferInfo(gl, undefined, gl.canvas.width, gl.canvas.height)
 
   // Start the rendering loop
   console.log('🚀 Starting render loop...')
   renderLoop()
 }
 
-export function setRedness(value) {
-  redness = value
-}
-export function setScanlineCount(value) {
-  scanlineCount = value
-}
-export function setScanlineSize(value) {
-  scanlineBright = value
-}
 /**
  * Sets the source image for the rendering chain
- * @param {string | ArrayBuffer | null | undefined} imageData
+ * @param {string} imageSrc
  * @param {number} width
  * @param {number} height
  */
-export async function setSource(imageData, width, height) {
-  if (!imageData || !width || !height) return
+export async function setSource(imageSrc, width, height) {
+  if (!imageSrc || !width || !height) return
 
-  //@ts-ignore
   texture = twgl.createTexture(gl, {
-    src: imageData,
+    src: imageSrc,
+    //@ts-ignore
     flipY: true,
     width: width,
     height: height,
@@ -116,25 +82,52 @@ function renderLoop() {
   gl.clearColor(0, 0, 0, 1)
   gl.clear(gl.COLOR_BUFFER_BIT)
 
-  gl.useProgram(programInfo1.program)
-  twgl.bindFramebufferInfo(gl, framebuffer1)
-  twgl.setBuffersAndAttributes(gl, programInfo1, bufferInfo)
-  twgl.setUniforms(programInfo1, {
-    image: texture,
-    redness,
-  })
-  twgl.drawBufferInfo(gl, bufferInfo)
+  if (!Alpine.store('effects')) return
 
-  // Binding to null here renders to the screen
-  gl.useProgram(programInfo2.program)
-  twgl.bindFramebufferInfo(gl, null)
-  twgl.setBuffersAndAttributes(gl, programInfo2, bufferInfo)
-  twgl.setUniforms(programInfo2, {
-    image: framebuffer1.attachments[0], // MAGIC HERE! Use the texture from the first pass
-    scanlineCount,
-    scanlineBright,
-  })
-  twgl.drawBufferInfo(gl, bufferInfo)
+  // If no effects, use the passthrough shader to render the texture directly
+  if (Alpine.store('effects').length === 0 && texture) {
+    gl.useProgram(passThroughProgInfo.program)
+    twgl.setBuffersAndAttributes(gl, passThroughProgInfo, bufferInfo)
+    twgl.setUniforms(passThroughProgInfo, { image: texture })
+    twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES)
+    requestAnimationFrame(renderLoop)
+    return
+  }
+
+  // loop through all effects and apply them, get effect and index
+  for (let i = 0; i < Alpine.store('effects').length; i++) {
+    const effect = Alpine.store('effects')[i]
+
+    const uniforms = {}
+    if (i === 0) {
+      // If first effect, use the texture as input
+      uniforms.image = texture
+    } else {
+      // If not the first effect, use the previous effect's framebuffer attachment
+      uniforms.image = Alpine.store('effects')[i - 1].frameBuffer.attachments[0]
+    }
+
+    gl.useProgram(effect.programInfo.program)
+    if (i === Alpine.store('effects').length - 1) {
+      // Last effect, render to screen
+      twgl.bindFramebufferInfo(gl, null)
+    } else {
+      // Not the last effect, render to framebuffer
+      twgl.bindFramebufferInfo(gl, effect.frameBuffer)
+    }
+
+    const effectParamUniforms = Object.entries(effect.params).reduce((acc, [key, param]) => {
+      acc[key] = param.value
+      return acc
+    }, {})
+
+    twgl.setBuffersAndAttributes(gl, effect.programInfo, bufferInfo)
+    twgl.setUniforms(effect.programInfo, {
+      ...uniforms,
+      ...effectParamUniforms,
+    })
+    twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES)
+  }
 
   // Request the next frame and loop forever
   requestAnimationFrame(renderLoop)
