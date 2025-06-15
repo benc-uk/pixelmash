@@ -31,7 +31,7 @@ Alpine.start()
 
 async function _fakeImageLoad(name) {
   // Fake a file input change to trigger the initial image load
-  const res = await fetch(`public/${name}`)
+  const res = await fetch(`${name}`)
   const blob = await res.blob()
   const file = new File([blob], name, { type: 'image/jpeg' })
   loadImageFile({ target: { files: [file] } })
