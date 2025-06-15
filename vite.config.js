@@ -1,6 +1,6 @@
 export default {
-  base: "./",
+  base: './',
   build: {
     chunkSizeWarningLimit: 1024, // kB
   },
-};
+}
