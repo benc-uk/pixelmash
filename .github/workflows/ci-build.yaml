@@ -1,5 +1,5 @@
 # Simple workflow for deploying Vite app to GitHub Pages
-name: Deploy to GH Pages
+name: CI - Check, Build and Deploy
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
   id-token: write
 
 jobs:
-  ci-lint:
+  lint-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -39,7 +39,7 @@ jobs:
           npx tsc --noEmit
 
   deploy:
-    needs: ci-lint
+    needs: lint-check
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
