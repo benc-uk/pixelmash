@@ -9,9 +9,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint ./app/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "types": "swc ./app/ --out-dir ./tmp/"
   },
   "devDependencies": {
+    "eslint": "^9.29.0",
+    "prettier": "^3.5.3",
     "vite": "^6.3.5"
   },
   "dependencies": {
