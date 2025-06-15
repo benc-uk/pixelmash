@@ -23,18 +23,30 @@
           <option value="lines">Lines</option>
         </select>
         <form id="source-options" x-show="sourceType === 'image'" class="m1">
-          <input type="file" accept="image/*" @change="load($event)" />
+          <input type="file" accept="image/*" @change="loadImage($event)" />
         </form>
       </section>
 
       <template x-for="(effect, index) in effects" :key="index">
         <section>
-          <b x-text="`Effect: ${index+1}`"></b>
+          <b x-text="effect.name"></b>
           <form>
-            <label for="effect-type">Goatiness</label>
-            <input type="range" min="0" max="100" />
-            <label for="effect-type">Magic</label>
-            <input type="range" min="0" max="100" />
+            <template x-for="(param, name) in effect.params" :key="index + '-' + name">
+              <div class="row">
+                <label x-text="name" :for="name + '-' + index"></label>
+                <input
+                  class="wide"
+                  type="range"
+                  x-model="effect.params[name].value"
+                  :min="effect.params[name].min"
+                  :max="effect.params[name].max"
+                  :step="effect.params[name].step"
+                  :name="name"
+                  @change="paramChange(effect, name, effect.params[name].value)"
+                  :id="name + '-' + index"
+                />
+              </div>
+            </template>
           </form>
         </section>
       </template>

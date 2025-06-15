@@ -1,26 +1,53 @@
 import '../assets/style.css'
 import '../assets/helpers.css'
 
-import { init as initRendering, setSource } from './render'
+import { init as initRendering, setSource, setRedness, setScanlineCount, setScanlineSize } from './render'
 import Alpine from 'alpinejs'
 
 Alpine.data('app', () => ({
   sourceType: 'image',
   sourceLoaded: false,
 
-  /** @type {string[]} */
+  /** @type {Object[]} */
   effects: [],
 
   async init() {
     initRendering()
 
+    // TEMP: While developing, bootstrap some stuff for testing
     _fakeImageLoad('img/kitty.jpg')
+    this.effects.push({
+      name: 'redizer',
+      params: {
+        redness: {
+          value: 1.2,
+          min: 0,
+          max: 4,
+          step: 0.01,
+        },
+      },
+    })
+    this.effects.push({
+      name: 'scanlines',
+      params: {
+        count: {
+          value: 600,
+          min: 100,
+          max: 1000,
+          step: 10,
+        },
+        size: {
+          value: 1,
+          min: 0.01,
+          max: 5,
+          step: 0.01,
+        },
+      },
+    })
     this.sourceLoaded = true
 
-    // Drag and drop support using Alpine.js refs
+    // Drag and drop support
     const container = this.$refs.canvasContainer
-    console.log(container)
-
     if (container) {
       container.addEventListener('dragover', (e) => {
         e.preventDefault()
@@ -39,11 +66,34 @@ Alpine.data('app', () => ({
   },
 
   addEffect() {
-    this.effects.push('junk')
+    this.effects.push({
+      name: 'new-effect',
+      params: {
+        param1: {
+          value: 0.5,
+          min: 0,
+          max: 1,
+        },
+        param2: {
+          value: 1,
+          min: 0,
+          max: 10,
+        },
+      },
+    })
+  },
+
+  paramChange(effect) {
+    if (effect.name === 'redizer') {
+      setRedness(effect.params.redness.value)
+    } else if (effect.name === 'scanlines') {
+      setScanlineCount(effect.params.count.value)
+      setScanlineSize(effect.params.size.value)
+    }
   },
 
   /** @param {Event} event */
-  async load(event) {
+  async loadImage(event) {
     await loadImageFile(event)
     this.sourceLoaded = true
   },
