@@ -1,0 +1,21 @@
+//
+// We're not using TypeScript!!
+// But we can still use the TypeScript compiler to type-check our JavaScript files via JSDoc
+//
+
+{
+  "compilerOptions": {
+    "allowJs": true, // Allows JavaScript files to be included
+    "checkJs": true, // Enables type checking for JavaScript files
+    "noEmit": true, // Prevents TypeScript from emitting compiled files
+    "types": ["vite/client"],
+    "moduleResolution": "Node", // Use Node.js module resolution
+    "target": "ESNext",
+    "module": "ESNext", // Use ESNext to support import/export syntax
+    "rootDir": ".", // Root directory of the project
+    "strictNullChecks": true,
+    // "strict": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["app/**/*.js"] // Ensures all JavaScript files are type-checked
+}

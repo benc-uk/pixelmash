@@ -1,0 +1,22 @@
+{
+  "name": "pixel-mash",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "author": "Ben Coleman",
+  "license": "MIT",
+  "description": "Image manipulation tool using GLSL shaders",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/alpinejs": "^3.13.11",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "alpinejs": "^3.14.9",
+    "twgl.js": "^6.1.1"
+  }
+}
