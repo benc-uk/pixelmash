@@ -1,7 +1,7 @@
 import '../assets/style.css'
 
-import Alpine from 'alpinejs'
 import { init as initRendering, setSource } from './render'
+import Alpine from 'alpinejs'
 
 Alpine.data('app', () => ({
   sourceType: 'image',
@@ -12,7 +12,7 @@ Alpine.data('app', () => ({
   async init() {
     initRendering()
 
-    _fakeImageLoad('kitty.jpg')
+    _fakeImageLoad(333)
 
     console.log('🎉 Alpine.js initialized and rendering started')
   },
@@ -29,6 +29,7 @@ Alpine.data('app', () => ({
 
 Alpine.start()
 
+/** @param {string} name */
 async function _fakeImageLoad(name) {
   // Fake a file input change to trigger the initial image load
   const res = await fetch(`${name}`)

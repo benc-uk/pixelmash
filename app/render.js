@@ -1,10 +1,10 @@
 import * as twgl from 'twgl.js'
 import vertShader from '../shaders/base.vert.glsl?raw'
 
-var gl
-var texture
-var programInfo
-var bufferInfo
+let gl
+let texture
+let programInfo
+let bufferInfo
 
 const fragmentShaderSource = `#version 300 es 
 precision highp float;

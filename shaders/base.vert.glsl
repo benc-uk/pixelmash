@@ -1,4 +1,7 @@
 #version 300 es
+
+// Most basic vertex shader for rendering a full-screen quad
+
 precision highp float;
 
 in vec4 position;
