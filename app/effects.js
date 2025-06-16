@@ -34,7 +34,7 @@ const effects = {
   pixelate: {
     name: 'pixelate',
     params: {
-      pixelSize: {
+      size: {
         value: 10,
         min: 1,
         max: 100,

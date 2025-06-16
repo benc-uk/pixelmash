@@ -8,10 +8,10 @@ uniform sampler2D image;
 out vec4 fragColor;
 
 // Effect uniforms
-uniform float pixelSize;
+uniform float size;
 
 void main() {
-  vec2 pixelCoord = floor(gl_FragCoord.xy / pixelSize) * pixelSize;
+  vec2 pixelCoord = floor(gl_FragCoord.xy / size) * size;
   pixelCoord /= vec2(textureSize(image, 0));
   vec4 pixel = texture(image, pixelCoord);
   fragColor = pixel;

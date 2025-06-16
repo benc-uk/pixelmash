@@ -1,7 +1,7 @@
 #version 300 es 
 precision highp float;
 
-// Effect for simple edge detection, with colorization of edges using hue and XOR
+// Effect for simple edge detection, with colourisation of edges using hue and XOR
 
 in vec2 imgcoord;
 uniform sampler2D image;
@@ -9,7 +9,7 @@ out vec4 fragColor;
 
 // Effect uniforms
 uniform float threshold; // Range: 0 to 1
-uniform float strength; // Range: 0 to 10
+uniform float strength; // Range: 0 to 1
 uniform float size; // Range: 0 to 10
 uniform float hue; // Range: 0 to 1
 
@@ -40,9 +40,9 @@ void main() {
     return;
   }
 
-  // Colorize the edge based on hue
+  // Colourise the edge based on hue
   vec3 edgeColor = hsv2rgb(hue, 1.0, 1.0);
   
-  // Apply strength to the edge color but XOR with the center color
+  // Apply strength to the edge colour but XOR with the center colour
   fragColor = vec4(mix(center.rgb, edgeColor, strength) * (1.0 - step(0.5, edgeStrength)), center.a);
 }
