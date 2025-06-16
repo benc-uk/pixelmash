@@ -1,16 +1,18 @@
 import '../assets/style.css'
 import '../assets/helpers.css'
 
+import { createEffect, effectList } from './effects'
 import { getGL, init as initRendering, setSource } from './render'
 import Alpine from 'alpinejs'
-import { createEffect } from './effects'
 
 Alpine.data('app', () => ({
   sourceType: 'image',
   sourceLoaded: false,
+  pickNewEffect: false,
 
   /** @type {Object[]} */
   effects: [],
+  effectList,
 
   async init() {
     this.$store.effects = []
@@ -21,28 +23,33 @@ Alpine.data('app', () => ({
       this.sourceLoaded = true
     }
 
-    // Drag and drop support
-    const container = this.$refs.canvasContainer
-    if (container) {
-      container.addEventListener('dragover', (e) => {
-        e.preventDefault()
-        e.dataTransfer.dropEffect = 'copy'
-      })
-      container.addEventListener('drop', async (e) => {
-        e.preventDefault()
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          await loadImageFile(e.dataTransfer.files[0])
-          this.sourceLoaded = true
-        }
-      })
-    }
-
     initRendering()
     console.log('🎉 Alpine.js initialized and rendering started')
+    this.resize()
   },
 
-  addEffect() {
-    const effect = createEffect('colourize', getGL())
+  resize() {
+    resizeCanvas()
+  },
+
+  dragNavSizer(event) {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const nav = document.querySelector('nav')
+    if (!nav) return
+    nav.style.width = `${event.clientX}px`
+    // resizeCanvas()
+  },
+
+  addEffect(effectName) {
+    this.pickNewEffect = false
+    this.$refs.effectSelector.selectedIndex = 0
+    if (effectName === '__cancel__') {
+      console.log('Effect selection cancelled')
+      return
+    }
+    const effect = createEffect(effectName, getGL())
     this.$store.effects.push(effect)
   },
 
@@ -65,6 +72,13 @@ Alpine.data('app', () => ({
     const file = fileInput.files[0]
     await loadImageFile(file)
     this.sourceLoaded = true
+  },
+
+  async dropImage(event) {
+    if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+      await loadImageFile(event.dataTransfer.files[0])
+      this.sourceLoaded = true
+    }
   },
 }))
 
@@ -91,6 +105,7 @@ async function loadImageFile(file) {
       img.onload = async () => {
         const base64ImgData = /** @type {string} */ (e.target?.result)
         await setSource(base64ImgData, img.width, img.height)
+        resizeCanvas()
       }
 
       img.src = /** @type {string} */ (e.target?.result)
@@ -98,4 +113,29 @@ async function loadImageFile(file) {
 
     reader.readAsDataURL(file)
   }
+}
+
+/**
+ * Painful to need this but aspect aware canvas resizing is not straightforward
+ */
+function resizeCanvas() {
+  const canvas = document.querySelector('canvas')
+  const container = document.querySelector('main')
+  if (!canvas || !container) return
+
+  const aspectRatio = canvas.width / canvas.height
+  const containerWidth = container.clientWidth
+  const containerHeight = container.clientHeight
+
+  let newWidth = containerWidth
+  let newHeight = Math.floor(newWidth / aspectRatio)
+
+  if (newHeight > containerHeight) {
+    newHeight = containerHeight
+    newWidth = Math.floor(newHeight * aspectRatio)
+  }
+
+  // Note only change the CSS size, not the internal canvas size
+  canvas.style.width = `${newWidth}px`
+  canvas.style.height = `${newHeight}px`
 }

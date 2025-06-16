@@ -35,14 +35,13 @@ main {
 
 canvas {
   background-color: black;
-  width: 100%;
+  margin: 0 auto;
 }
 
 nav {
   background-color: var(--dark);
-  max-width: 18rem;
-  min-width: 18rem;
-  width: 18rem;
+  width: 18vw;
+  min-width: 8rem;
 }
 
 section {
@@ -77,13 +76,22 @@ select {
   border: none;
 }
 
+.nav-sizer {
+  width: 0.2rem;
+  min-width: 0.2rem;
+  max-width: 0.2rem;
+  background-color: yellowgreen;
+  cursor: ew-resize;
+}
+
 /* overlay centers and positioned absolutely */
 .overlay {
   position: absolute;
   background-color: none;
   font-size: 2rem;
-  margin-left: 12vw;
   padding: 2rem;
+  width: calc(100% - 18vw);
+  transform: translateX(calc(18vw / 2));
   border: 0.2rem solid var(--med);
   border-radius: 1rem;
   color: var(--med);

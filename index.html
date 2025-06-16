@@ -10,23 +10,6 @@
 
   <body x-data="app">
     <nav>
-      <section>
-        <b>Source</b>
-        <select x-model="sourceType">
-          <option disabled selected>Choose source</option>
-          <option value="image">Image</option>
-          <option disabled>Generators:</option>
-          <option value="noise">Noise</option>
-          <option value="gradient">Gradient</option>
-          <option value="squares">Squares</option>
-          <option value="circles">Circles</option>
-          <option value="lines">Lines</option>
-        </select>
-        <form id="source-options" x-show="sourceType === 'image'" class="m1">
-          <input type="file" accept="image/*" @change="fileInputImage($event)" />
-        </form>
-      </section>
-
       <template x-for="(effect, index) in $store.effects" :key="index">
         <section>
           <b x-text="effect.name"></b>
@@ -48,14 +31,27 @@
         </section>
       </template>
 
-      <div>
-        <button class="wide" @click="addEffect">Add Effect</button>
+      <div class="row">
+        <button class="wide" x-show="!pickNewEffect" @click="pickNewEffect=true; $refs.effectSelector.focus()">
+          Add Effect
+        </button>
+        <select x-show="pickNewEffect" @change="addEffect($event.target.value)" class="wide" x-ref="effectSelector">
+          <option disabled selected>Choose effect</option>
+          <template x-for="(effectName, index) in effectList" :key="index">
+            <option :value="effectName" x-text="effectName"></option>
+          </template>
+          <option value="__cancel__">- Cancel -</option>
+        </select>
       </div>
     </nav>
+    <div class="nav-sizer" draggable="true" @drag="dragNavSizer($event)"></div>
 
-    <main x-ref="canvasContainer">
-      <canvas width="800" height="600" x-ref="canvas"></canvas>
-      <!-- overlay note telling users to drag and drop images -->
+    <main
+      @resize.window="resize(this)"
+      @drop.prevent="dropImage($event)"
+      @dragover.prevent="$event.dataTransfer.dropEffect = 'copy'"
+    >
+      <canvas width="800" height="600"></canvas>
       <div class="overlay" x-show="!sourceLoaded">Drag and drop any image here to start</div>
     </main>
   </body>

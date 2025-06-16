@@ -73,6 +73,16 @@ export async function setSource(imageSrc, width, height) {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 
   console.log('🖼️ Image loaded, canvas size updated:', gl.canvas.width, 'x', gl.canvas.height)
+
+  // Resize all the effect frameBuffers to match the new canvas size
+  // const effects = Alpine.store('effects')
+
+  // for (const effect of effects) {
+  //   if (!effects || effects.length === 0) continue
+  //   if (effect.frameBuffer) {
+  //     twgl.resizeFramebufferInfo(gl, effect.frameBuffer, undefined, width, height)
+  //   }
+  // }
 }
 
 /**
@@ -98,7 +108,12 @@ function renderLoop() {
   for (let i = 0; i < Alpine.store('effects').length; i++) {
     const effect = Alpine.store('effects')[i]
 
-    const uniforms = {}
+    const uniforms = {
+      width: gl.canvas.width,
+      height: gl.canvas.height,
+      aspect: gl.canvas.width / gl.canvas.height,
+    }
+
     if (i === 0) {
       // If first effect, use the texture as input
       uniforms.image = texture
@@ -120,6 +135,8 @@ function renderLoop() {
       acc[key] = param.value
       return acc
     }, {})
+
+    console.log(effectParamUniforms)
 
     twgl.setBuffersAndAttributes(gl, effect.programInfo, bufferInfo)
     twgl.setUniforms(effect.programInfo, {
