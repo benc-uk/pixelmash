@@ -17,15 +17,16 @@ Alpine.data('app', () => ({
   async init() {
     this.$store.effects = []
 
-    // Debug when running in dev mode
-    if (import.meta.env.DEVzzz) {
-      loadFromURL('img/kitty.jpg')
-      this.sourceLoaded = true
-    }
-
     initRendering()
     console.log('🎉 Alpine.js initialized and rendering started')
     this.resize()
+
+    // Debug when running in dev mode
+    if (import.meta.env.DEV) {
+      loadFromURL('img/kitty.jpg')
+      this.sourceLoaded = true
+      this.addEffect('pixelate')
+    }
   },
 
   resize() {

@@ -2,6 +2,7 @@ import * as twgl from 'twgl.js'
 import colourize from '../assets/shaders/colourize.frag.glsl?raw'
 import edge from '../assets/shaders/edge.frag.glsl?raw'
 import pixelate from '../assets/shaders/pixelate.frag.glsl?raw'
+import scanlines from '../assets/shaders/scanlines.frag.glsl?raw'
 import vertShader from '../assets/shaders/base.vert.glsl?raw'
 
 // This defines the available effects
@@ -34,11 +35,17 @@ const effects = {
   pixelate: {
     name: 'pixelate',
     params: {
-      size: {
-        value: 10,
-        min: 1,
-        max: 100,
+      cellCount: {
+        value: 60,
+        min: 4,
+        max: 200,
         step: 1,
+      },
+      radius: {
+        value: 1,
+        min: 0.2,
+        max: 1.8,
+        step: 0.01,
       },
     },
     fragShader: pixelate,
@@ -73,6 +80,25 @@ const effects = {
       },
     },
     fragShader: edge,
+  },
+
+  scanlines: {
+    name: 'scanlines',
+    params: {
+      spacing: {
+        value: 0.8,
+        min: 0.1,
+        max: 2,
+        step: 0.01,
+      },
+      intensity: {
+        value: 0.5,
+        min: 0.25,
+        max: 3,
+        step: 0.01,
+      },
+    },
+    fragShader: scanlines,
   },
 }
 

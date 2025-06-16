@@ -75,14 +75,14 @@ export async function setSource(imageSrc, width, height) {
   console.log('🖼️ Image loaded, canvas size updated:', gl.canvas.width, 'x', gl.canvas.height)
 
   // Resize all the effect frameBuffers to match the new canvas size
-  // const effects = Alpine.store('effects')
+  const effects = Alpine.store('effects')
 
-  // for (const effect of effects) {
-  //   if (!effects || effects.length === 0) continue
-  //   if (effect.frameBuffer) {
-  //     twgl.resizeFramebufferInfo(gl, effect.frameBuffer, undefined, width, height)
-  //   }
-  // }
+  if (!effects || effects.length === 0) return
+  for (const effect of effects) {
+    if (effect.frameBuffer) {
+      twgl.resizeFramebufferInfo(gl, effect.frameBuffer, undefined, width, height)
+    }
+  }
 }
 
 /**
@@ -109,9 +109,8 @@ function renderLoop() {
     const effect = Alpine.store('effects')[i]
 
     const uniforms = {
-      width: gl.canvas.width,
-      height: gl.canvas.height,
-      aspect: gl.canvas.width / gl.canvas.height,
+      imageRes: [gl.canvas.width, gl.canvas.height],
+      aspect: gl.canvas.height / gl.canvas.width,
     }
 
     if (i === 0) {
