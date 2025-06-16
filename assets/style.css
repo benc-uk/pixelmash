@@ -90,11 +90,17 @@ select {
   background-color: none;
   font-size: 2rem;
   padding: 2rem;
-  width: calc(100% - 18vw);
-  transform: translateX(calc(18vw / 2));
   border: 0.2rem solid var(--med);
   border-radius: 1rem;
   color: var(--med);
+  width: 50vw;
+  text-align: center;
+
+  /* Centering the overlay */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
 }
 
 .row {

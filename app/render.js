@@ -136,8 +136,6 @@ function renderLoop() {
       return acc
     }, {})
 
-    console.log(effectParamUniforms)
-
     twgl.setBuffersAndAttributes(gl, effect.programInfo, bufferInfo)
     twgl.setUniforms(effect.programInfo, {
       ...uniforms,

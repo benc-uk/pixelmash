@@ -18,7 +18,7 @@ Alpine.data('app', () => ({
     this.$store.effects = []
 
     // Debug when running in dev mode
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEVzzz) {
       loadFromURL('img/kitty.jpg')
       this.sourceLoaded = true
     }

@@ -9,7 +9,7 @@
   </head>
 
   <body x-data="app">
-    <nav>
+    <nav x-show="sourceLoaded">
       <template x-for="(effect, index) in $store.effects" :key="index">
         <section>
           <b x-text="effect.name"></b>
@@ -32,7 +32,11 @@
       </template>
 
       <div class="row">
-        <button class="wide" x-show="!pickNewEffect" @click="pickNewEffect=true; $refs.effectSelector.focus()">
+        <button
+          class="wide"
+          x-show="!pickNewEffect && sourceLoaded"
+          @click="pickNewEffect=true; $refs.effectSelector.focus()"
+        >
           Add Effect
         </button>
         <select x-show="pickNewEffect" @change="addEffect($event.target.value)" class="wide" x-ref="effectSelector">
