@@ -56,7 +56,11 @@
       @dragover.prevent="$event.dataTransfer.dropEffect = 'copy'"
     >
       <canvas width="800" height="600"></canvas>
-      <div class="overlay" x-show="!sourceLoaded">Drag and drop any image here to start</div>
+      <div class="overlay" x-show="!sourceLoaded" @click="promptForFile">
+        Drag and drop image here or click to upload
+      </div>
     </main>
+
+    <input type="file" accept="image/*" x-ref="fileInput" @change="fileInputImage($event)" />
   </body>
 </html>

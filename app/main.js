@@ -80,6 +80,16 @@ Alpine.data('app', () => ({
       this.sourceLoaded = true
     }
   },
+
+  async promptForFile() {
+    const fileInput = /** @type {HTMLInputElement} */ (this.$refs.fileInput)
+    if (!fileInput) {
+      console.warn('No file input found')
+      return
+    }
+
+    fileInput.click()
+  },
 }))
 
 Alpine.start()

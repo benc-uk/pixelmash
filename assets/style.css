@@ -101,6 +101,8 @@ select {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1000;
+
+  cursor: pointer;
 }
 
 .row {
@@ -149,4 +151,8 @@ input[type='file'] {
 
 nav {
   overflow-y: auto;
+}
+
+input[type='file'] {
+  display: none;
 }
