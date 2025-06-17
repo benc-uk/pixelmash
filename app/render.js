@@ -31,7 +31,7 @@ export async function init() {
     console.error('💥 Canvas element not found!')
     return
   }
-  gl = canvas.getContext('webgl2')
+  gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true })
   if (!gl) {
     console.error('💥 WebGL2 not supported!')
     return
@@ -85,6 +85,10 @@ export async function setSource(imageSrc, width, height) {
   }
 }
 
+export function clearSource() {
+  texture = null
+}
+
 /**
  * Main rendering loop
  */
@@ -131,6 +135,11 @@ function renderLoop() {
     }
 
     const effectParamUniforms = Object.entries(effect.params).reduce((acc, [key, param]) => {
+      if (param.type === 'colour') {
+        acc[key] = hexColourToTuple(param.value)
+        return acc
+      }
+
       acc[key] = param.value
       return acc
     }, {})
@@ -145,4 +154,23 @@ function renderLoop() {
 
   // Request the next frame and loop forever
   requestAnimationFrame(renderLoop)
+}
+
+/**
+ * Converts a hex color string to a normalized RGB tuple
+ * @param {string} hexString
+ * @returns
+ */
+function hexColourToTuple(hexString) {
+  if (!/^#([0-9A-F]{3}){1,2}$/i.test(hexString)) {
+    console.error('Invalid hex color format:', hexString)
+    return [0, 0, 0, 1] // Default to black with full opacity
+  }
+
+  const hex = hexString.replace('#', '')
+  const bigint = parseInt(hex, 16)
+  const r = (bigint >> 16) & 255
+  const g = (bigint >> 8) & 255
+  const b = bigint & 255
+  return [r / 255, g / 255, b / 255] // Return as normalized RGBA tuple
 }

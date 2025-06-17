@@ -12,19 +12,23 @@
     <nav x-show="sourceLoaded">
       <template x-for="(effect, index) in $store.effects" :key="index">
         <section>
-          <b x-text="effect.name"></b>
+          <b draggable="true" @dragstart="dragEffect($event, index)" @dragover.prevent>
+            <span x-text="effect.name"></span>
+            <button class="tiny" @click="removeEffect(index)">⨯</button>
+          </b>
           <form>
             <template x-for="(param, name) in effect.params" :key="index + '-' + name">
-              <div class="row">
+              <div class="col">
                 <label x-text="name" :for="name + '-' + index"></label>
                 <input
-                  class="wide"
                   type="range"
-                  x-model="effect.params[name].value"
-                  :min="effect.params[name].min"
-                  :max="effect.params[name].max"
-                  :step="effect.params[name].step"
+                  x-show="param.type === 'number'"
+                  x-model="param.value"
+                  :min="param.min"
+                  :max="param.max"
+                  :step="param.step"
                 />
+                <input type="color" x-show="param.type === 'colour'" x-model="param.value" />
               </div>
             </template>
           </form>
@@ -47,7 +51,10 @@
           <option value="__cancel__">- Cancel -</option>
         </select>
       </div>
+      <button class="wide" @click="clear">Clear</button>
+      <button class="wide" @click="save">Save</button>
     </nav>
+
     <div class="nav-sizer" draggable="true" @drag="dragNavSizer($event)"></div>
 
     <main
@@ -56,9 +63,9 @@
       @dragover.prevent="$event.dataTransfer.dropEffect = 'copy'"
     >
       <canvas width="800" height="600"></canvas>
-      <div class="overlay" x-show="!sourceLoaded" @click="promptForFile">
+      <aside class="overlay" x-show="!sourceLoaded" @click="promptForFile">
         Drag and drop image here or click to upload
-      </div>
+      </aside>
     </main>
 
     <input type="file" accept="image/*" x-ref="fileInput" @change="fileInputImage($event)" />

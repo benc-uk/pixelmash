@@ -1,8 +1,8 @@
 import '../assets/style.css'
 import '../assets/helpers.css'
 
+import { clearSource, getGL, init as initRendering, setSource } from './render'
 import { createEffect, effectList } from './effects'
-import { getGL, init as initRendering, setSource } from './render'
 import Alpine from 'alpinejs'
 
 Alpine.data('app', () => ({
@@ -23,9 +23,9 @@ Alpine.data('app', () => ({
 
     // Debug when running in dev mode
     if (import.meta.env.DEV) {
-      loadFromURL('img/kitty.jpg')
+      loadFromURL('img/computers.jpg')
       this.sourceLoaded = true
-      this.addEffect('pixelate')
+      this.addEffect('duotone')
     }
   },
 
@@ -39,19 +39,36 @@ Alpine.data('app', () => ({
 
     const nav = document.querySelector('nav')
     if (!nav) return
+    const main = document.querySelector('main')
+    if (!main) return
+
     nav.style.width = `${event.clientX}px`
-    // resizeCanvas()
+    main.style.width = `calc(100% - ${event.clientX}px)`
+    this.$nextTick(() => {
+      resizeCanvas()
+    })
   },
 
   addEffect(effectName) {
     this.pickNewEffect = false
     this.$refs.effectSelector.selectedIndex = 0
+
     if (effectName === '__cancel__') {
       console.log('Effect selection cancelled')
       return
     }
+
     const effect = createEffect(effectName, getGL())
     this.$store.effects.push(effect)
+  },
+
+  removeEffect(index) {
+    if (index < 0 || index >= this.$store.effects.length) {
+      console.warn('Invalid effect index:', index)
+      return
+    }
+
+    this.$store.effects.splice(index, 1)
   },
 
   /**
@@ -90,6 +107,22 @@ Alpine.data('app', () => ({
     }
 
     fileInput.click()
+  },
+
+  clear() {
+    this.$store.effects = []
+    this.sourceLoaded = false
+    clearSource()
+  },
+
+  save() {
+    const canvas = document.querySelector('canvas')
+    if (!canvas) return
+
+    const link = document.createElement('a')
+    link.download = 'pixel-mash.png'
+    link.href = canvas.toDataURL('image/png')
+    link.click()
   },
 }))
 
