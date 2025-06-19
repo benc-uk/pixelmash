@@ -25,7 +25,7 @@ Alpine.data('app', () => ({
 
     // Debug when running in dev mode
     if (import.meta.env.DEV) {
-      // loadFromURL('img/kittens.jpg')
+      loadFromURL('img/kittens.jpg')
       // this.sourceLoaded = true
       // this.addEffect('solarize')
       // this.addEffect('edge')
