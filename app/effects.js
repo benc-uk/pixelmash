@@ -1,15 +1,22 @@
 import * as twgl from 'twgl.js'
+
 import colourize from '../assets/shaders/colourize.frag.glsl?raw'
 import duotone from '../assets/shaders/duotone.frag.glsl?raw'
 import edge from '../assets/shaders/edge.frag.glsl?raw'
 import pixelate from '../assets/shaders/pixelate.frag.glsl?raw'
+import posterize from '../assets/shaders/posterize.frag.glsl?raw'
 import scanlines from '../assets/shaders/scanlines.frag.glsl?raw'
-import vertShader from '../assets/shaders/base.vert.glsl?raw'
+import slices from '../assets/shaders/slices.frag.glsl?raw'
+import solarize from '../assets/shaders/solarize.frag.glsl?raw'
+
+// This is the vertex shader used for all effects
+import libShader from '../assets/shaders/_lib.frag.glsl?raw'
+import vertShader from '../assets/shaders/_base.vert.glsl?raw'
 
 // This defines the available effects
 const effects = {
-  colourize: {
-    name: 'colourize',
+  levels: {
+    name: 'levels',
     params: {
       red: {
         type: 'number',
@@ -30,6 +37,20 @@ const effects = {
         value: 1,
         min: 0,
         max: 6,
+        step: 0.01,
+      },
+      brightness: {
+        type: 'number',
+        value: 1,
+        min: 0,
+        max: 3,
+        step: 0.01,
+      },
+      contrast: {
+        type: 'number',
+        value: 1,
+        min: 0.0,
+        max: 3.0,
         step: 0.01,
       },
     },
@@ -64,29 +85,30 @@ const effects = {
         type: 'number',
         value: 0.1,
         min: 0,
-        max: 0.2,
+        max: 0.3,
         step: 0.001,
       },
       strength: {
         type: 'number',
         value: 0.7,
         min: 0,
-        max: 1,
+        max: 2,
         step: 0.01,
       },
       size: {
         type: 'number',
-        value: 1,
+        value: 3,
         min: 0,
-        max: 10,
-        step: 0.01,
+        max: 20,
+        step: 0.1,
       },
-      hue: {
-        type: 'number',
-        value: 0,
-        min: 0,
-        max: 1,
-        step: 0.01,
+      colour: {
+        type: 'colour',
+        value: '#78e24b',
+      },
+      xor: {
+        type: 'boolean',
+        value: false,
       },
     },
     fragShader: edge,
@@ -102,11 +124,18 @@ const effects = {
         max: 2,
         step: 0.01,
       },
-      intensity: {
+      level: {
         type: 'number',
         value: 0.5,
         min: 0.25,
         max: 3,
+        step: 0.01,
+      },
+      intensity: {
+        type: 'number',
+        value: 0.5,
+        min: 0.0,
+        max: 3.0,
         step: 0.01,
       },
     },
@@ -134,6 +163,76 @@ const effects = {
     },
     fragShader: duotone,
   },
+
+  posterize: {
+    name: 'posterize',
+    params: {
+      levels: {
+        type: 'number',
+        value: 4,
+        min: 2,
+        max: 16,
+        step: 0.2,
+      },
+    },
+    fragShader: posterize,
+  },
+
+  slices: {
+    name: 'slices',
+    params: {
+      count: {
+        type: 'number',
+        value: 25,
+        min: 4,
+        max: 400,
+        step: 1,
+      },
+      offset: {
+        type: 'number',
+        value: 15,
+        min: 1,
+        max: 50,
+        step: 1,
+      },
+      jitter: {
+        type: 'number',
+        value: 0,
+        min: 0.0,
+        max: 10.0,
+        step: 0.1,
+      },
+    },
+    fragShader: slices,
+  },
+
+  solarize: {
+    name: 'solarize',
+    params: {
+      centerBrightness: {
+        type: 'number',
+        value: 0.5,
+        min: 0.1,
+        max: 2,
+        step: 0.01,
+      },
+      powerCurve: {
+        type: 'number',
+        value: 2.0,
+        min: 1.0,
+        max: 3.0,
+        step: 0.01,
+      },
+      colorize: {
+        type: 'number',
+        value: 0.0,
+        min: 0.0,
+        max: 1.0,
+        step: 0.01,
+      },
+    },
+    fragShader: solarize,
+  },
 }
 
 export function effectList() {
@@ -151,14 +250,20 @@ export function createEffect(name, gl) {
 
   const effectBase = effects[name]
 
+  // This is a hacky way to handle includes in shaders
+  // It replaces the comment with a fragment of shader code containing the library functions
+  effectBase.fragShader = effectBase.fragShader.replace('// INCLUDE_LIB', libShader)
+
   const programInfo = twgl.createProgramInfo(gl, [vertShader, effectBase.fragShader])
   const frameBuffer = twgl.createFramebufferInfo(gl, undefined, gl.canvas.width, gl.canvas.height)
 
   const effect = {
     name: effectBase.name,
-    params: JSON.parse(JSON.stringify(effectBase.params)), // Deep copy to avoid reference issues
-    frameBuffer,
-    programInfo,
+    // This is a little trick to do a deep copy to avoid reference issues on the params
+    params: JSON.parse(JSON.stringify(effectBase.params)),
+    frameBuffer, // GL framebuffer for rendering the effect into
+    programInfo, // GL program info for rendering the effect shader
+    folded: false, // Whether the effect is folded in the UI
   }
 
   return effect

@@ -3,46 +3,49 @@ precision highp float;
 
 // Effect for simple edge detection, with colourisation of edges using hue and XOR
 
-in vec2 imgcoord;
+in vec2 imgCoord;
 uniform sampler2D image;
-out vec4 fragColor;
+out vec4 pixel;
 
 // Effect uniforms
 uniform float threshold; // Range: 0 to 1
 uniform float strength; // Range: 0 to 1
 uniform float size; // Range: 0 to 10
-uniform float hue; // Range: 0 to 1
-
-vec3 hsv2rgb(float h, float s, float v)
-{
-  vec4 t = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
-  vec3 p = abs(fract(vec3(h) + t.xyz) * 6.0 - vec3(t.w));
-  return v * mix(vec3(t.x), clamp(p - vec3(t.x), 0.0, 1.0), s);
-}
+uniform vec3 colour; // RGB colour for the edge
+uniform bool xor; // Apply XOR effect
 
 void main() {
   vec2 texSize = vec2(textureSize(image, 0));
   vec2 pixelSize = size / texSize;
 
   // Sample the image at the current pixel and its neighbors
-  vec4 center = texture(image, imgcoord);
-  vec4 left = texture(image, imgcoord - vec2(pixelSize.x, 0.0));
-  vec4 right = texture(image, imgcoord + vec2(pixelSize.x, 0.0));
-  vec4 up = texture(image, imgcoord - vec2(0.0, pixelSize.y));
-  vec4 down = texture(image, imgcoord + vec2(0.0, pixelSize.y));
+  vec4 center = texture(image, imgCoord);
+  vec4 left = texture(image, imgCoord - vec2(pixelSize.x, 0.0));
+  vec4 right = texture(image, imgCoord + vec2(pixelSize.x, 0.0));
+  vec4 up = texture(image, imgCoord - vec2(0.0, pixelSize.y));
+  vec4 down = texture(image, imgCoord + vec2(0.0, pixelSize.y));
 
   // Calculate the edge strength using a simple Sobel-like operator
   float edgeStrength = length(center.rgb - (left.rgb + right.rgb + up.rgb + down.rgb) / 4.0);
 
-  // Apply thresholding
-  if (edgeStrength < threshold) {
-    fragColor = center; // No edge detected
+  // Apply thresholding 
+  if(edgeStrength < threshold) {
+    pixel = center; // No edge detected 
     return;
   }
 
-  // Colourise the edge based on hue
-  vec3 edgeColor = hsv2rgb(hue, 1.0, 1.0);
-  
-  // Apply strength to the edge colour but XOR with the center colour
-  fragColor = vec4(mix(center.rgb, edgeColor, strength) * (1.0 - step(0.5, edgeStrength)), center.a);
+  if(xor) {
+    // Apply XOR effect using all the sampled pixels
+    vec4 xorColor = vec4(0.0);
+    xorColor += left;
+    xorColor += right;
+    xorColor += up;
+    xorColor += down;
+    xorColor /= 4.0; // Average the colors of the neighbors
+    xorColor = vec4(xorColor.rgb * colour, 1.0) * strength + center * (1.0 - strength);
+    pixel = xorColor;
+  } else {
+    // Colourise the edge
+    pixel = vec4(colour, 1.0) * strength + center * (1.0 - strength);
+  }
 }

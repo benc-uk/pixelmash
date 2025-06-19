@@ -3,38 +3,38 @@ precision highp float;
 
 // Effect for pixelating the image, with rounding into cool looking circular grid
 
-in vec2 imgcoord;
+in vec2 imgCoord;
 uniform sampler2D image;
 uniform vec2 imageRes;
 uniform float aspect;
-out vec4 fragColor;
+out vec4 pixel;
 
 // Effect uniforms
 uniform float cellCount;
 uniform float radius;
 
 void main() {
-  float cellSize = (imageRes.x / cellCount);
-  
+  float cellSize = (imageRes.x / cellCount); 
+
   // Adjust coordinates for aspect ratio to make cells square
-  vec2 adjustedCoord = imgcoord;
+  vec2 adjustedCoord = imgCoord;
   adjustedCoord.y *= aspect;
-  
+
   vec2 gridPos = floor(adjustedCoord * imageRes.x / cellSize);
   vec2 center = (gridPos + 0.5) * cellSize / imageRes.x;
   center.y /= aspect; // Convert back to original coordinate space
-  
+
   vec4 pixelColor = texture(image, center);
 
   // Calculate distance with aspect ratio correction
-  vec2 diff = imgcoord - center;
+  vec2 diff = imgCoord - center;
   diff.y *= aspect; // Adjust y component for aspect ratio
   float dist = length(diff);
-  
+
   float pixelRadius = 0.0004 * radius * cellSize;
-  if (dist < pixelRadius) {
-    fragColor = pixelColor;
+  if(dist < pixelRadius) {
+    pixel = pixelColor;
   } else {
-    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    pixel = vec4(0.0, 0.0, 0.0, 1.0);
   }
 }

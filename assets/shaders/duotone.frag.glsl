@@ -3,10 +3,9 @@ precision highp float;
 
 // Effect for adding scanlines to the image, with adjustable intensity and spacing
 
-in vec2 imgcoord;
+in vec2 imgCoord;
 uniform sampler2D image;
-uniform vec2 imageRes;
-out vec4 fragColor;
+out vec4 pixel;
 
 // Effect uniforms
 uniform vec3 colour1;
@@ -14,14 +13,14 @@ uniform vec3 colour2;
 uniform float contrast;
 
 void main() {
-  vec4 pixel = texture(image, imgcoord);
-  
+  vec4 inPixel = texture(image, imgCoord);
+
   vec3 lumFactor = vec3(0.2126, 0.7152, 0.0722);
-  vec3 desat = vec3(dot(pixel.rgb, lumFactor));
+  vec3 desat = vec3(dot(inPixel.rgb, lumFactor));
 
   // increase contrast
   desat = pow(desat, vec3(contrast));
   desat *= contrast;
 
-  fragColor = vec4(mix(colour1, colour2, desat), 1.0);
+  pixel = vec4(mix(colour1, colour2, desat), 1.0);
 }

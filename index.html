@@ -9,14 +9,20 @@
   </head>
 
   <body x-data="app">
-    <nav x-show="sourceLoaded">
+    <nav x-show="sourceLoaded" x-ref="nav">
       <template x-for="(effect, index) in $store.effects" :key="index">
-        <section>
-          <b draggable="true" @dragstart="dragEffect($event, index)" @dragover.prevent>
+        <section :data-effect-index="index">
+          <b
+            draggable="true"
+            @dragstart="dragEffectStart(index)"
+            @dragover.prevent="$event.dataTransfer.dropEffect = 'move'"
+            @drop="dragEffectDrop(index)"
+            @click="effect.folded = !effect.folded"
+          >
             <span x-text="effect.name"></span>
             <button class="tiny" @click="removeEffect(index)">⨯</button>
           </b>
-          <form>
+          <form x-show="!effect.folded">
             <template x-for="(param, name) in effect.params" :key="index + '-' + name">
               <div class="col">
                 <label x-text="name" :for="name + '-' + index"></label>
@@ -29,6 +35,10 @@
                   :step="param.step"
                 />
                 <input type="color" x-show="param.type === 'colour'" x-model="param.value" />
+                <label class="switch" x-show="param.type === 'boolean'">
+                  <input type="checkbox" x-model="param.value" />
+                  <span class="slider round"></span>
+                </label>
               </div>
             </template>
           </form>
@@ -36,36 +46,38 @@
       </template>
 
       <div class="row">
-        <button
-          class="wide"
-          x-show="!pickNewEffect && sourceLoaded"
-          @click="pickNewEffect=true; $refs.effectSelector.focus()"
-        >
-          Add Effect
-        </button>
+        <button class="wide" x-show="!pickNewEffect && sourceLoaded" @click="showEffectSelector">Add Effect</button>
         <select x-show="pickNewEffect" @change="addEffect($event.target.value)" class="wide" x-ref="effectSelector">
           <option disabled selected>Choose effect</option>
           <template x-for="(effectName, index) in effectList" :key="index">
             <option :value="effectName" x-text="effectName"></option>
           </template>
-          <option value="__cancel__">- Cancel -</option>
+          <option value="__cancel__" style="text-align: center">CANCEL</option>
         </select>
       </div>
-      <button class="wide" @click="clear">Clear</button>
-      <button class="wide" @click="save">Save</button>
+      <div class="row">
+        <button class="wide" @click="clear">Clear</button>
+        <button class="wide" @click="save">Save</button>
+      </div>
     </nav>
 
-    <div class="nav-sizer" draggable="true" @drag="dragNavSizer($event)"></div>
+    <div class="nav-sizer" draggable="true" @drag="dragNavSizer($event)" x-show="sourceLoaded"></div>
 
     <main
       @resize.window="resize(this)"
       @drop.prevent="dropImage($event)"
       @dragover.prevent="$event.dataTransfer.dropEffect = 'copy'"
+      x-ref="main"
     >
-      <canvas width="800" height="600"></canvas>
+      <canvas width="800" height="600" x-ref="canvas" x-show="sourceLoaded"></canvas>
       <aside class="overlay" x-show="!sourceLoaded" @click="promptForFile">
+        <b>Pixel Mash</b><br /><br />
         Drag and drop image here or click to upload
       </aside>
+      <footer x-show="!sourceLoaded">
+        v0.01 - (C) Ben Coleman 2025 -
+        <a href="https://github.com/benc-uk/pixelmash" target="_blank">benc-uk/pixelmash</a>
+      </footer>
     </main>
 
     <input type="file" accept="image/*" x-ref="fileInput" @change="fileInputImage($event)" />

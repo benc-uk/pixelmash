@@ -1,36 +1,25 @@
 import * as twgl from 'twgl.js'
 import Alpine from 'alpinejs'
-import vertShader from '../assets/shaders/base.vert.glsl?raw'
+import passthroughShader from '../assets/shaders/_null.frag.glsl?raw'
+import vertShader from '../assets/shaders/_base.vert.glsl?raw'
 
 let gl
 let texture
 let bufferInfo
 let passThroughProgInfo
 
-const fragShaderPassthrough = `#version 300 es 
-precision highp float;
-in vec2 imgcoord;
-uniform sampler2D image;
-out vec4 fragColor;
-void main() {
-  fragColor = texture(image, imgcoord);
-}`
-
-export function getGL() {
-  if (!gl) {
-    console.error('💥 WebGL2 context not initialized!')
-    return null
-  }
-
-  return gl
-}
-
+/**
+ * Initializes the WebGL2 context and sets up the rendering pipeline
+ * - also kicks off the rendering loop
+ */
 export async function init() {
   const canvas = document.querySelector('canvas')
   if (!canvas) {
     console.error('💥 Canvas element not found!')
     return
   }
+
+  // Note: preserveDrawingBuffer needed for saving the canvas as an image
   gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true })
   if (!gl) {
     console.error('💥 WebGL2 not supported!')
@@ -40,7 +29,7 @@ export async function init() {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
   console.log('🎨 WebGL2 initialized successfully')
 
-  passThroughProgInfo = twgl.createProgramInfo(gl, [vertShader, fragShaderPassthrough])
+  passThroughProgInfo = twgl.createProgramInfo(gl, [vertShader, passthroughShader])
   bufferInfo = twgl.createBufferInfoFromArrays(gl, {
     position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
   })
@@ -85,6 +74,10 @@ export async function setSource(imageSrc, width, height) {
   }
 }
 
+/**
+ * Clears the current source texture
+ * This is useful for resetting the rendering state
+ */
 export function clearSource() {
   texture = null
 }
@@ -96,21 +89,25 @@ function renderLoop() {
   gl.clearColor(0, 0, 0, 1)
   gl.clear(gl.COLOR_BUFFER_BIT)
 
-  if (!Alpine.store('effects')) return
+  const effects = Alpine.store('effects')
+  if (!effects) return
 
   // If no effects, use the passthrough shader to render the texture directly
-  if (Alpine.store('effects').length === 0 && texture) {
+  if (effects.length === 0 && texture) {
     gl.useProgram(passThroughProgInfo.program)
     twgl.setBuffersAndAttributes(gl, passThroughProgInfo, bufferInfo)
-    twgl.setUniforms(passThroughProgInfo, { image: texture })
+    twgl.setUniforms(passThroughProgInfo, {
+      image: texture,
+    })
     twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES)
     requestAnimationFrame(renderLoop)
     return
   }
 
-  // loop through all effects and apply them, get effect and index
-  for (let i = 0; i < Alpine.store('effects').length; i++) {
-    const effect = Alpine.store('effects')[i]
+  // loop through all effects and apply them by running the shader programs
+  // in order, using the output of each effect as the input for the next
+  for (let i = 0; i < effects.length; i++) {
+    const effect = effects[i]
 
     const uniforms = {
       imageRes: [gl.canvas.width, gl.canvas.height],
@@ -118,22 +115,23 @@ function renderLoop() {
     }
 
     if (i === 0) {
-      // If first effect, use the texture as input
+      // If first effect, use the source texture as input
       uniforms.image = texture
     } else {
       // If not the first effect, use the previous effect's framebuffer attachment
-      uniforms.image = Alpine.store('effects')[i - 1].frameBuffer.attachments[0]
+      uniforms.image = effects[i - 1].frameBuffer.attachments[0]
     }
 
     gl.useProgram(effect.programInfo.program)
-    if (i === Alpine.store('effects').length - 1) {
+    if (i === effects.length - 1) {
       // Last effect, render to screen
       twgl.bindFramebufferInfo(gl, null)
     } else {
-      // Not the last effect, render to framebuffer
+      // When not the last effect, render to the effect's framebuffer
       twgl.bindFramebufferInfo(gl, effect.frameBuffer)
     }
 
+    // Get the effect parameters and convert them to uniforms
     const effectParamUniforms = Object.entries(effect.params).reduce((acc, [key, param]) => {
       if (param.type === 'colour') {
         acc[key] = hexColourToTuple(param.value)
@@ -173,4 +171,17 @@ function hexColourToTuple(hexString) {
   const g = (bigint >> 8) & 255
   const b = bigint & 255
   return [r / 255, g / 255, b / 255] // Return as normalized RGBA tuple
+}
+
+/**
+ * Helper to grab the WebGL2 context
+ * @returns {WebGL2RenderingContext | null}
+ */
+export function getGL() {
+  if (!gl) {
+    console.error('💥 WebGL2 context not initialized!')
+    return null
+  }
+
+  return gl
 }

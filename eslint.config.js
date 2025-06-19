@@ -20,7 +20,7 @@ export default [
       'no-undef': 'error',
       'no-var': 'error',
       'prefer-const': 'error',
-      'sort-imports': 'warn',
+      // 'sort-imports': 'warn',
     },
   },
 ]

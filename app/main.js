@@ -1,5 +1,6 @@
 import '../assets/style.css'
 import '../assets/helpers.css'
+import '../assets/toggle.css'
 
 import { clearSource, getGL, init as initRendering, setSource } from './render'
 import { createEffect, effectList } from './effects'
@@ -9,6 +10,7 @@ Alpine.data('app', () => ({
   sourceType: 'image',
   sourceLoaded: false,
   pickNewEffect: false,
+  dragEffectIndex: -1,
 
   /** @type {Object[]} */
   effects: [],
@@ -23,9 +25,11 @@ Alpine.data('app', () => ({
 
     // Debug when running in dev mode
     if (import.meta.env.DEV) {
-      loadFromURL('img/computers.jpg')
-      this.sourceLoaded = true
-      this.addEffect('duotone')
+      // loadFromURL('img/kittens.jpg')
+      // this.sourceLoaded = true
+      // this.addEffect('solarize')
+      // this.addEffect('edge')
+      // this.addEffect('scanlines')
     }
   },
 
@@ -37,15 +41,22 @@ Alpine.data('app', () => ({
     event.preventDefault()
     event.stopPropagation()
 
-    const nav = document.querySelector('nav')
-    if (!nav) return
-    const main = document.querySelector('main')
-    if (!main) return
-
-    nav.style.width = `${event.clientX}px`
-    main.style.width = `calc(100% - ${event.clientX}px)`
+    const newWid = event.clientX
+    if (newWid < 100 || newWid > 600) return
+    this.$refs.nav.style.width = `${newWid}px`
+    this.$refs.main.style.width = `calc(100% - ${newWid}px)`
     this.$nextTick(() => {
       resizeCanvas()
+    })
+  },
+
+  showEffectSelector() {
+    this.pickNewEffect = true
+    this.$refs.effectSelector.selectedIndex = 0
+    this.$refs.effectSelector.focus()
+
+    this.$nextTick(() => {
+      this.$refs.effectSelector.showPicker()
     })
   },
 
@@ -113,16 +124,40 @@ Alpine.data('app', () => ({
     this.$store.effects = []
     this.sourceLoaded = false
     clearSource()
+    this.$refs.main.style.width = '100%'
+    this.$nextTick(() => {
+      resizeCanvas()
+    })
   },
 
   save() {
-    const canvas = document.querySelector('canvas')
-    if (!canvas) return
-
     const link = document.createElement('a')
     link.download = 'pixel-mash.png'
-    link.href = canvas.toDataURL('image/png')
+    link.href = this.$refs.canvas.toDataURL('image/png')
     link.click()
+  },
+
+  dragEffectStart(index) {
+    this.dragEffectIndex = index
+  },
+
+  dragEffectDrop(index) {
+    // If we are dropping on the same index, do nothing
+    if (this.dragEffectIndex === index) {
+      return
+    }
+
+    // If we are dropping on a different index, swap the effects
+    if (
+      this.dragEffectIndex >= 0 &&
+      this.dragEffectIndex < this.$store.effects.length &&
+      index >= 0 &&
+      index < this.$store.effects.length
+    ) {
+      const temp = this.$store.effects[this.dragEffectIndex]
+      this.$store.effects[this.dragEffectIndex] = this.$store.effects[index]
+      this.$store.effects[index] = temp
+    }
   },
 }))
 
@@ -163,6 +198,7 @@ async function loadImageFile(file) {
  * Painful to need this but aspect aware canvas resizing is not straightforward
  */
 function resizeCanvas() {
+  // Can't use Alpine refs here because this is called outside of Alpine's context
   const canvas = document.querySelector('canvas')
   const container = document.querySelector('main')
   if (!canvas || !container) return

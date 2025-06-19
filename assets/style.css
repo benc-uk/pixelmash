@@ -72,7 +72,7 @@ select {
   font-size: 0.9rem;
   width: 100%;
   padding: 0.3rem;
-  background-color: #222;
+  background-color: #111;
   color: var(--accent);
   border: none;
 }
@@ -87,7 +87,7 @@ select {
 
 aside {
   position: absolute;
-  background-color: none;
+  background-color: black;
   font-size: 2.5vw;
   padding: 2rem;
   border: 0.2rem solid var(--med);
@@ -100,6 +100,25 @@ aside {
   transform: translate(-50%, -50%);
   z-index: 10;
   cursor: pointer;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 99%;
+  background-color: black;
+  color: var(--vlight);
+  padding: 0.5rem;
+  text-align: center;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: white;
 }
 
 .row {
