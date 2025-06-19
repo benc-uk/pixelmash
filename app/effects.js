@@ -3,6 +3,7 @@ import * as twgl from 'twgl.js'
 import colourize from '../assets/shaders/colourize.frag.glsl?raw'
 import duotone from '../assets/shaders/duotone.frag.glsl?raw'
 import edge from '../assets/shaders/edge.frag.glsl?raw'
+import melt from '../assets/shaders/melt.frag.glsl?raw'
 import pixelate from '../assets/shaders/pixelate.frag.glsl?raw'
 import posterize from '../assets/shaders/posterize.frag.glsl?raw'
 import scanlines from '../assets/shaders/scanlines.frag.glsl?raw'
@@ -209,14 +210,14 @@ const effects = {
   solarize: {
     name: 'solarize',
     params: {
-      centerBrightness: {
+      center: {
         type: 'number',
         value: 0.5,
         min: 0.1,
         max: 2,
         step: 0.01,
       },
-      powerCurve: {
+      power: {
         type: 'number',
         value: 2.0,
         min: 1.0,
@@ -232,6 +233,41 @@ const effects = {
       },
     },
     fragShader: solarize,
+  },
+
+  melt: {
+    name: 'melt',
+    params: {
+      strength: {
+        type: 'number',
+        value: 0.2,
+        min: 0.0,
+        max: 4,
+        step: 0.01,
+      },
+      progress: {
+        type: 'number',
+        value: 1,
+        min: 0,
+        max: 2,
+        step: 0.01,
+      },
+      drips: {
+        type: 'number',
+        value: 10,
+        min: 1,
+        max: 64,
+        step: 1,
+      },
+      offset: {
+        type: 'number',
+        value: 0.0,
+        min: 0,
+        max: 1,
+        step: 0.001,
+      },
+    },
+    fragShader: melt,
   },
 }
 

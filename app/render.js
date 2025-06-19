@@ -54,7 +54,6 @@ export async function setSource(imageSrc, width, height) {
     flipY: true,
     width: width,
     height: height,
-    minMag: gl.LINEAR,
   })
 
   gl.canvas.width = width
