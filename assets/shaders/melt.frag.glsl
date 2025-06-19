@@ -1,7 +1,7 @@
 #version 300 es
 precision highp float;
 
-// A liquid melt effect that offsets pixels in the y direction in a blurry liquid-like manner.
+// A liquid melt effect that looks a little like dripping or melting of an image
 
 in vec2 imgCoord;
 uniform sampler2D image;
