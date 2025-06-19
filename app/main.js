@@ -27,7 +27,7 @@ Alpine.data('app', () => ({
     if (import.meta.env.DEV) {
       loadFromURL('img/kittens.jpg')
       this.sourceLoaded = true
-      this.addEffect('melt')
+      this.addEffect('warp')
       // this.addEffect('edge')
       // this.addEffect('scanlines')
     }

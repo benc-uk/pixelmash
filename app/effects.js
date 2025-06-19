@@ -8,6 +8,7 @@ import pixelate from '../assets/shaders/pixelate.frag.glsl?raw'
 import posterize from '../assets/shaders/posterize.frag.glsl?raw'
 import scanlines from '../assets/shaders/scanlines.frag.glsl?raw'
 import slices from '../assets/shaders/slices.frag.glsl?raw'
+import warp from '../assets/shaders/warp.frag.glsl?raw'
 import solarize from '../assets/shaders/solarize.frag.glsl?raw'
 
 // This is the vertex shader used for all effects
@@ -263,11 +264,39 @@ const effects = {
         type: 'number',
         value: 0.0,
         min: 0,
-        max: 1,
+        max: 0.5,
         step: 0.001,
       },
     },
     fragShader: melt,
+  },
+
+  warp: {
+    name: 'warp',
+    params: {
+      amount: {
+        type: 'number',
+        value: 16,
+        min: 0,
+        max: 25,
+        step: 0.1,
+      },
+      time: {
+        type: 'number',
+        value: 12,
+        min: 0,
+        max: 25,
+        step: 0.1,
+      },
+      count: {
+        type: 'number',
+        value: 1,
+        min: 0,
+        max: 16,
+        step: 0.1,
+      },
+    },
+    fragShader: warp,
   },
 }
 
@@ -286,7 +315,7 @@ export function createEffect(name, gl) {
 
   const effectBase = effects[name]
 
-  // This is a hacky way to handle includes in shaders
+  // This is a lazy / hacky way to handle includes in shaders
   // It replaces the comment with a fragment of shader code containing the library functions
   effectBase.fragShader = effectBase.fragShader.replace('// INCLUDE_LIB', libShader)
 

@@ -13,10 +13,7 @@ uniform float progress;   // time or animation offset
 uniform int drips;   // number of drips
 uniform float offset; // normalized horizontal offset [0.0, 1.0]
 
-// Simple random function
-float random(float n) {
-  return fract(sin(n * 91.9898) * 43758.5453);
-}
+// INCLUDE_LIB
 
 void main() {
   float x = imgCoord.x;
