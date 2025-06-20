@@ -26,9 +26,9 @@ Alpine.data('app', () => ({
 
     // Debug when running in dev mode
     if (import.meta.env.DEV) {
-      loadFromURL('img/kittens.jpg')
+      loadFromURL('img/weird.jpg')
       this.sourceLoaded = true
-      this.addEffect('rgb')
+      this.addEffect('pixelate')
       // this.addEffect('edge')
       // this.addEffect('scanlines')
     }

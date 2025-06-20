@@ -67,14 +67,14 @@ const effects = {
     params: {
       cellCount: {
         type: 'number',
-        value: 60,
+        value: 100,
         min: 4,
         max: 200,
         step: 1,
       },
       radius: {
         type: 'number',
-        value: 1,
+        value: 3,
         min: 0.2,
         max: 3,
         step: 0.01,

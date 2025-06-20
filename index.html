@@ -20,7 +20,7 @@
             @click="effect.folded = !effect.folded"
           >
             <span x-text="effect.name"></span>
-            <button class="tiny" @click="removeEffect(index)">⨯</button>
+            <button class="tiny" @click.stop="removeEffect(index)">⨯</button>
           </b>
           <form x-show="!effect.folded">
             <template x-for="(param, name) in effect.params" :key="index + '-' + name">

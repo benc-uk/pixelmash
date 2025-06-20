@@ -54,6 +54,8 @@ export async function setSource(imageSrc, width, height) {
     flipY: true,
     width: width,
     height: height,
+    minMag: gl.NEAREST, // This makes the pixelation effects look better
+    //minMag: gl.LINEAR,
   })
 
   gl.canvas.width = width
