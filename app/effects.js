@@ -1,5 +1,6 @@
 import * as twgl from 'twgl.js'
 
+import blur from '../assets/shaders/blur.frag.glsl?raw'
 import colourize from '../assets/shaders/colourize.frag.glsl?raw'
 import duotone from '../assets/shaders/duotone.frag.glsl?raw'
 import edge from '../assets/shaders/edge.frag.glsl?raw'
@@ -8,8 +9,10 @@ import pixelate from '../assets/shaders/pixelate.frag.glsl?raw'
 import posterize from '../assets/shaders/posterize.frag.glsl?raw'
 import scanlines from '../assets/shaders/scanlines.frag.glsl?raw'
 import slices from '../assets/shaders/slices.frag.glsl?raw'
+import ripples from '../assets/shaders/ripples.frag.glsl?raw'
 import warp from '../assets/shaders/warp.frag.glsl?raw'
 import solarize from '../assets/shaders/solarize.frag.glsl?raw'
+import rgb from '../assets/shaders/rgb.frag.glsl?raw'
 
 // This is the vertex shader used for all effects
 import libShader from '../assets/shaders/_lib.frag.glsl?raw'
@@ -73,7 +76,7 @@ const effects = {
         type: 'number',
         value: 1,
         min: 0.2,
-        max: 1.8,
+        max: 3,
         step: 0.01,
       },
     },
@@ -298,10 +301,75 @@ const effects = {
     },
     fragShader: warp,
   },
+
+  ripples: {
+    name: 'ripples',
+    params: {
+      time: {
+        type: 'number',
+        value: 5,
+        min: 0,
+        max: 10,
+        step: 0.1,
+      },
+      scale: {
+        type: 'number',
+        value: 4,
+        min: 0,
+        max: 10,
+        step: 0.01,
+      },
+      amount: {
+        type: 'number',
+        value: 0.05,
+        min: 0,
+        max: 0.4,
+        step: 0.001,
+      },
+    },
+    fragShader: ripples,
+  },
+
+  blur: {
+    name: 'blur',
+    params: {
+      size: {
+        type: 'number',
+        value: 5,
+        min: 0,
+        max: 40,
+        step: 0.5,
+      },
+    },
+    fragShader: blur,
+  },
+
+  rgb: {
+    name: 'rgb',
+    params: {
+      dist: {
+        type: 'number',
+        value: 0.01,
+        min: 0,
+        max: 0.08,
+        step: 0.0001,
+      },
+      seed: {
+        type: 'number',
+        value: 0,
+        min: 0,
+        max: 2,
+        step: 0.01,
+      },
+    },
+    fragShader: rgb,
+  },
 }
 
 export function effectList() {
-  return Object.keys(effects)
+  return Object.keys(effects).sort((a, b) => {
+    return effects[a].name.localeCompare(effects[b].name)
+  })
 }
 
 /**
@@ -315,7 +383,7 @@ export function createEffect(name, gl) {
 
   const effectBase = effects[name]
 
-  // This is a lazy / hacky way to handle includes in shaders
+  // This is an ultra hacky way to handle '#include' in WebGL which doesn't support it natively.
   // It replaces the comment with a fragment of shader code containing the library functions
   effectBase.fragShader = effectBase.fragShader.replace('// INCLUDE_LIB', libShader)
 

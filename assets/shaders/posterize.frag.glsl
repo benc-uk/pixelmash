@@ -16,6 +16,7 @@ void main() {
 
   // Calculate the posterization effect
   float step = 1.0 / levels;
+
   inPixel.rgb = floor(inPixel.rgb / step) * step;
   inPixel.rgb = clamp(inPixel.rgb, 0.0, 1.0);
   pixel = inPixel;

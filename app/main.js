@@ -7,6 +7,7 @@ import { createEffect, effectList } from './effects'
 import Alpine from 'alpinejs'
 
 Alpine.data('app', () => ({
+  version: import.meta.env.PACKAGE_VERSION || 'unknown',
   sourceType: 'image',
   sourceLoaded: false,
   pickNewEffect: false,
@@ -27,7 +28,7 @@ Alpine.data('app', () => ({
     if (import.meta.env.DEV) {
       loadFromURL('img/kittens.jpg')
       this.sourceLoaded = true
-      this.addEffect('warp')
+      this.addEffect('rgb')
       // this.addEffect('edge')
       // this.addEffect('scanlines')
     }
