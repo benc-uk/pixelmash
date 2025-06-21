@@ -18,20 +18,21 @@ Alpine.data('app', () => ({
   effectList,
 
   async init() {
+    console.log(`🦄 Pixel Mosh ${this.version}`)
     this.$store.effects = []
 
     initRendering()
-    console.log('🎉 Alpine.js initialized and rendering started')
+
     this.resize()
 
-    // Debug when running in dev mode
+    // For debugging & dev - when running locally in dev mode
     if (import.meta.env.DEV) {
-      loadFromURL('img/weird.jpg')
+      loadFromURL('img/urban.jpg')
       this.sourceLoaded = true
-      this.addEffect('pixelate')
-      // this.addEffect('edge')
-      // this.addEffect('scanlines')
+      this.addEffect('barrelblur')
     }
+
+    console.log('🎉 Alpine.js initialized and app started')
   },
 
   resize() {
@@ -39,9 +40,6 @@ Alpine.data('app', () => ({
   },
 
   dragNavSizer(event) {
-    event.preventDefault()
-    event.stopPropagation()
-
     const newWid = event.clientX
     if (newWid < 100 || newWid > 600) return
     this.$refs.nav.style.width = `${newWid}px`

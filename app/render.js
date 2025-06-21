@@ -35,7 +35,7 @@ export async function init() {
   })
 
   // Start the rendering loop
-  console.log('🚀 Starting render loop...')
+  console.log('🚀 Starting main GL render loop...')
   renderLoop()
 }
 

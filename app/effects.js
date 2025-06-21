@@ -13,6 +13,7 @@ import ripples from '../assets/shaders/ripples.frag.glsl?raw'
 import warp from '../assets/shaders/warp.frag.glsl?raw'
 import solarize from '../assets/shaders/solarize.frag.glsl?raw'
 import rgb from '../assets/shaders/rgb.frag.glsl?raw'
+import barrelblur from '../assets/shaders/barrelblur.frag.glsl?raw'
 
 // This is the vertex shader used for all effects
 import libShader from '../assets/shaders/_lib.frag.glsl?raw'
@@ -65,19 +66,19 @@ const effects = {
   pixelate: {
     name: 'pixelate',
     params: {
-      cellCount: {
+      cells: {
         type: 'number',
-        value: 100,
+        value: 80,
         min: 4,
         max: 200,
         step: 1,
       },
       radius: {
         type: 'number',
-        value: 3,
-        min: 0.2,
-        max: 3,
-        step: 0.01,
+        value: 1,
+        min: 0.1,
+        max: 1,
+        step: 0.001,
       },
     },
     fragShader: pixelate,
@@ -363,6 +364,41 @@ const effects = {
       },
     },
     fragShader: rgb,
+  },
+
+  barrelblur: {
+    name: 'barrelblur',
+    params: {
+      blur: {
+        type: 'number',
+        value: 0.2,
+        min: 0,
+        max: 0.5,
+        step: 0.0001,
+      },
+      offset: {
+        type: 'number',
+        value: 0.1,
+        min: 0,
+        max: 1,
+        step: 0.0001,
+      },
+      strength: {
+        type: 'number',
+        value: 0.4,
+        min: 0,
+        max: 1,
+        step: 0.001,
+      },
+      chromatic: {
+        type: 'number',
+        value: 0.0,
+        min: 0,
+        max: 3,
+        step: 0.001,
+      },
+    },
+    fragShader: barrelblur,
   },
 }
 
