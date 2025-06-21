@@ -34,6 +34,8 @@ export async function init() {
     position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
   })
 
+  Alpine.store('renderEffects', true)
+
   // Start the rendering loop
   console.log('🚀 Starting main GL render loop...')
   renderLoop()
@@ -48,21 +50,26 @@ export async function init() {
 export async function setSource(imageSrc, width, height) {
   if (!imageSrc || !width || !height) return
 
-  texture = twgl.createTexture(gl, {
-    src: imageSrc,
-    //@ts-ignore
-    flipY: true,
-    width: width,
-    height: height,
-    minMag: gl.NEAREST, // This makes the pixelation effects look better
-    //minMag: gl.LINEAR,
-  })
+  texture = twgl.createTexture(
+    gl,
+    {
+      src: imageSrc,
+      //@ts-ignore
+      flipY: true,
+      width: width,
+      height: height,
+      //minMag: gl.NEAREST, // This makes the pixelation effects look better
+      minMag: gl.LINEAR,
+    },
+    () => {
+      console.log('🖼️ Image loaded, canvas size updated:', gl.canvas.width, 'x', gl.canvas.height)
+      Alpine.store('renderComplete', false)
+    },
+  )
 
   gl.canvas.width = width
   gl.canvas.height = height
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-
-  console.log('🖼️ Image loaded, canvas size updated:', gl.canvas.width, 'x', gl.canvas.height)
 
   // Resize all the effect frameBuffers to match the new canvas size
   const effects = Alpine.store('effects')
@@ -87,6 +94,14 @@ export function clearSource() {
  * Main rendering loop
  */
 function renderLoop() {
+  // A caching mechanism to avoid unnecessary rendering
+  // Skip rendering if no parameters have been changed or the source hasn't changed
+  const renderEffects = Alpine.store('renderComplete')
+  if (renderEffects) {
+    requestAnimationFrame(renderLoop)
+    return
+  }
+
   gl.clearColor(0, 0, 0, 1)
   gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -101,11 +116,15 @@ function renderLoop() {
       image: texture,
     })
     twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES)
+
+    // Mark the render as complete, not super important when no effects in the chain
+    Alpine.store('renderComplete', true)
+
     requestAnimationFrame(renderLoop)
     return
   }
 
-  // loop through all effects and apply them by running the shader programs
+  // Loop through all effects and apply them by running the shader programs
   // in order, using the output of each effect as the input for the next
   for (let i = 0; i < effects.length; i++) {
     const effect = effects[i]
@@ -119,20 +138,21 @@ function renderLoop() {
       // If first effect, use the source texture as input
       uniforms.image = texture
     } else {
-      // If not the first effect, use the previous effect's framebuffer attachment
+      // Otherwise use the previous effect's framebuffer as input
       uniforms.image = effects[i - 1].frameBuffer.attachments[0]
     }
 
     gl.useProgram(effect.programInfo.program)
     if (i === effects.length - 1) {
-      // Last effect, render to screen
+      // Last effect, render out to screen, & freeze the rendering
       twgl.bindFramebufferInfo(gl, null)
+      Alpine.store('renderComplete', true)
     } else {
-      // When not the last effect, render to the effect's framebuffer
+      // When not the last effect, render into the effect's framebuffer
       twgl.bindFramebufferInfo(gl, effect.frameBuffer)
     }
 
-    // Get the effect parameters and convert them to uniforms
+    // Process the effect's parameters and convert them to uniforms
     const effectParamUniforms = Object.entries(effect.params).reduce((acc, [key, param]) => {
       if (param.type === 'colour') {
         acc[key] = hexColourToTuple(param.value)

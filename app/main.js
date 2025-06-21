@@ -27,9 +27,9 @@ Alpine.data('app', () => ({
 
     // For debugging & dev - when running locally in dev mode
     if (import.meta.env.DEV) {
-      loadFromURL('img/urban.jpg')
+      loadFromURL('img/kitty.jpg')
       this.sourceLoaded = true
-      this.addEffect('barrelblur')
+      this.addEffect('blur')
     }
 
     console.log('🎉 Alpine.js initialized and app started')
@@ -70,6 +70,9 @@ Alpine.data('app', () => ({
 
     const effect = createEffect(effectName, getGL())
     this.$store.effects.push(effect)
+
+    // Force a re-render
+    Alpine.store('renderComplete', false)
   },
 
   removeEffect(index) {
@@ -77,8 +80,10 @@ Alpine.data('app', () => ({
       console.warn('Invalid effect index:', index)
       return
     }
-
     this.$store.effects.splice(index, 1)
+
+    // Force a re-render
+    Alpine.store('renderComplete', false)
   },
 
   /**
@@ -157,6 +162,9 @@ Alpine.data('app', () => ({
       this.$store.effects[this.dragEffectIndex] = this.$store.effects[index]
       this.$store.effects[index] = temp
     }
+
+    // Force a re-render
+    Alpine.store('renderComplete', false)
   },
 }))
 

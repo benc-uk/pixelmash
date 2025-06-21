@@ -1,31 +1,31 @@
-#version 300 es 
+#version 300 es
 precision highp float;
 
-// A blur effect that averages the color of surrounding pixels 
+// A Guassian blur shader
+// This shader applies a Gaussian blur to an image based on the specified radius.
 
 in vec2 imgCoord;
 uniform sampler2D image;
 uniform vec2 imageRes;
 out vec4 pixel;
 
-uniform float size;
-
-// INCLUDE_LIB
+uniform float radius; // Blur radius in pixels
 
 void main() {
-  vec2 texelSize = 1.0 / imageRes; // Get the size of a single texel based on the image resolution
-  // Size of the blur kernel
-  vec4 outColour = vec4(0.0); // Initialize color accumulator
-  int count = 0; // Count of samples taken
+  vec2 texelSize = 1.0 / imageRes;
+  vec4 color = vec4(0.0);
+  float totalWeight = 0.0;
 
-  // Loop through a square kernel centered at the current pixel
-  for(int x = -int(size); x <= int(size); ++x) {
-    for(int y = -int(size); y <= int(size); ++y) {
-      vec2 offset = vec2(x, y) * texelSize; // Calculate offset in texture coordinates
-      outColour += texture(image, imgCoord + offset); // Sample the texture at the offset position
-      count++; // Increment sample count
+  // Loop through a square area around the current pixel
+  for(int x = -int(radius); x <= int(radius); ++x) {
+    for(int y = -int(radius); y <= int(radius); ++y) {
+      float weight = exp(-(float(x * x + y * y) / (2.0 * radius * radius)));
+      vec2 offset = vec2(float(x), float(y)) * texelSize;
+      color += texture(image, imgCoord + offset) * weight;
+      totalWeight += weight;
     }
   }
 
-  pixel = outColour / float(count); // Average the accumulated color and output it
+  // Normalize the color by the total weight
+  pixel = color / totalWeight;
 }

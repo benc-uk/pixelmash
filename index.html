@@ -30,9 +30,11 @@
                   type="range"
                   x-show="param.type === 'number'"
                   x-model="param.value"
+                  @change="$store.renderComplete = false"
                   :min="param.min"
                   :max="param.max"
                   :step="param.step"
+                  @input="$store.renderComplete = false"
                 />
                 <input type="color" x-show="param.type === 'colour'" x-model="param.value" />
                 <label class="switch" x-show="param.type === 'boolean'">

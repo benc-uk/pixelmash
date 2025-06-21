@@ -334,11 +334,11 @@ const effects = {
   blur: {
     name: 'blur',
     params: {
-      size: {
+      radius: {
         type: 'number',
         value: 5,
-        min: 0,
-        max: 40,
+        min: 1,
+        max: 60,
         step: 0.5,
       },
     },
@@ -424,7 +424,7 @@ export function createEffect(name, gl) {
   effectBase.fragShader = effectBase.fragShader.replace('// INCLUDE_LIB', libShader)
 
   const programInfo = twgl.createProgramInfo(gl, [vertShader, effectBase.fragShader])
-  const frameBuffer = twgl.createFramebufferInfo(gl, undefined, gl.canvas.width, gl.canvas.height)
+  const frameBuffer = twgl.createFramebufferInfo(gl)
 
   const effect = {
     name: effectBase.name,
