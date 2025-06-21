@@ -10,11 +10,11 @@ uniform float aspect;
 out vec4 pixel;
 
 // Effect uniforms
-uniform float cellCount;
+uniform float cells;
 uniform float radius;
 
 void main() {
-  float cellSize = (imageRes.x / cellCount); 
+  float cellSize = (imageRes.x / cells); 
 
   // Adjust coordinates for aspect ratio to make cells square
   vec2 adjustedCoord = imgCoord;
@@ -31,7 +31,7 @@ void main() {
   diff.y *= aspect; // Adjust y component for aspect ratio
   float dist = length(diff);
 
-  float pixelRadius = 0.0004 * radius * cellSize;
+  float pixelRadius = radius * cellSize / imageRes.x;
   if(dist < pixelRadius) {
     pixel = pixelColor;
   } else {
