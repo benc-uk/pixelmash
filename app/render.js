@@ -137,8 +137,8 @@ function renderLoop() {
     return
   }
 
-  const anim = Alpine.store('animationSpeed') > 0
-  let hasTime = false
+  const animEnabled = Alpine.store('animationSpeed') > 0
+  const anyEffectAnimated = effects.some((e) => e.animated)
 
   // Loop through all effects and apply them by running the shader programs
   // in order, using the output of each effect as the input for the next
@@ -175,20 +175,15 @@ function renderLoop() {
         return acc
       }
 
-      if (key === 'time' && anim) {
-        hasTime = true
-        return acc
-      }
-
       acc[key] = param.value
       return acc
     }, {})
 
-    // If any effect has a time parameter, and we are animating,
-    // we will update the time uniform for all effects
-    if (hasTime && anim) {
+    // If the effect is animated, fuck about with the time parameter
+    if (anyEffectAnimated && animEnabled) {
+      delete effectParamUniforms['time']
       uniforms.time = (performance.now() / 1000) * Alpine.store('animationSpeed')
-      Alpine.store('renderComplete', false) // Force re-render
+      Alpine.store('renderComplete', false)
     }
 
     twgl.setBuffersAndAttributes(gl, effect.programInfo, quadBuffers)

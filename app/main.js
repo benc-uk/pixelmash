@@ -31,9 +31,9 @@ Alpine.data('app', () => ({
 
     // For debugging & dev - when running locally in dev mode
     if (import.meta.env.DEV) {
-      // loadFromURL('img/kitty.jpg')
-      // this.sourceLoaded = true
-      // this.addEffect('melt')
+      loadFromURL('img/kitty.jpg')
+      this.sourceLoaded = true
+      this.addEffect('slice')
     }
 
     Alpine.store('renderComplete', false)

@@ -69,7 +69,7 @@
     <main @resize.window="resize(this)" @drop.prevent="dropImage($event)" @dragover.prevent="$event.dataTransfer.dropEffect = 'copy'" x-ref="main">
       <canvas width="800" height="600" x-ref="canvas" x-show="sourceLoaded" @dblclick="fullscreen"></canvas>
       <aside x-show="!sourceLoaded" @click="promptForFile">
-        <b>Pixel Mash</b><br /><br />
+        <h2>Pixel Mash</h2>
         Drag and drop image here or click to upload
       </aside>
       <aside x-show="!sourceLoaded" @click="openCamera" class="mt-30">Or use your camera</aside>

@@ -201,15 +201,30 @@ const effects = {
         max: 1,
         step: 0.001,
       },
-      jitter: {
+      variation: {
         type: 'number',
         value: 0,
         min: 0.0,
-        max: 10.0,
-        step: 0.1,
+        max: 1.0,
+        step: 0.01,
+      },
+      scaleBrightness: {
+        type: 'number',
+        value: 0,
+        min: 0.0,
+        max: 1.0,
+        step: 0.01,
+      },
+      time: {
+        type: 'number',
+        value: 0.0,
+        min: 0.0,
+        max: 5.0,
+        step: 0.001,
       },
     },
     fragShader: slice,
+    animated: true,
   },
 
   solarize: {
@@ -273,6 +288,7 @@ const effects = {
       },
     },
     fragShader: melt,
+    animated: true,
   },
 
   warp: {
@@ -301,6 +317,7 @@ const effects = {
       },
     },
     fragShader: warp,
+    animated: true,
   },
 
   ripples: {
@@ -329,6 +346,7 @@ const effects = {
       },
     },
     fragShader: ripples,
+    animated: true,
   },
 
   blur: {
@@ -433,6 +451,7 @@ export function createEffect(name, gl) {
     frameBuffer, // GL framebuffer for rendering the effect into
     programInfo, // GL program info for rendering the effect shader
     folded: false, // Whether the effect is folded in the UI
+    animated: effectBase.animated || false, // Whether the effect is animated
   }
 
   return effect

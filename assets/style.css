@@ -2,6 +2,8 @@
 
 :root {
   --accent: #4ec6b0;
+  --accent-dark: #2f7b6f;
+  --darkest: #111;
   --vdark: #1a1a1a;
   --darker: #222;
   --dark: #333;
@@ -20,7 +22,6 @@ html {
   padding: 0;
   font-family: 'Comfortaa', sans-serif;
   background-color: var(--vdark);
-  color: #ddd;
   height: 100%;
 }
 
@@ -46,6 +47,7 @@ nav {
   background-color: var(--dark);
   width: 18vw;
   min-width: 8rem;
+  overflow-y: auto;
 }
 
 .gone {
@@ -66,6 +68,7 @@ section b {
   display: block;
   background-color: var(--med);
   cursor: pointer;
+  color: var(--vlight);
 }
 
 form {
@@ -81,7 +84,7 @@ select {
   font-size: 0.9rem;
   width: 100%;
   padding: 0.3rem;
-  background-color: #111;
+  background-color: var(--darkest);
   color: var(--accent);
   border: none;
 }
@@ -105,6 +108,17 @@ aside {
   width: 30vw;
   text-align: center;
   cursor: pointer;
+}
+
+aside:hover {
+  background-color: var(--darker);
+  color: var(--vlight);
+}
+
+aside h2 {
+  font-size: calc(2.2rem + 0.9vw);
+  margin: 0.8rem 1rem;
+  color: var(--accent-dark);
 }
 
 footer {
@@ -187,10 +201,6 @@ input[type='file'] {
   font-family: 'Comfortaa', sans-serif;
 }
 
-nav {
-  overflow-y: auto;
-}
-
 input[type='file'] {
   display: none;
 }
@@ -208,6 +218,24 @@ input[type='color'] {
   inline-size: 100%;
   block-size: 20px;
   border: 0 solid black;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: var(--darkest);
+  height: 1rem;
+  border-radius: 0.2rem;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0.1rem;
+  height: 1rem;
+  border-radius: 0%;
+  background-color: var(--vlight);
+  cursor: pointer;
 }
 
 ::-webkit-color-swatch-wrapper {
