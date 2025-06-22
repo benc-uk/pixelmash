@@ -36,12 +36,7 @@
                   @change="$store.renderComplete = false"
                   @input="$store.renderComplete = false"
                 />
-                <input
-                  type="color"
-                  x-show="param.type === 'colour'"
-                  x-model="param.value"
-                  @change="$store.renderComplete = false"
-                />
+                <input type="color" x-show="param.type === 'colour'" x-model="param.value" @change="$store.renderComplete = false" />
                 <label class="switch" x-show="param.type === 'boolean'">
                   <input type="checkbox" x-model="param.value" @change="$store.renderComplete = false" />
                   <span class="slider round"></span>
@@ -71,12 +66,7 @@
 
     <div class="nav-sizer" draggable="true" @drag="dragNavSizer($event)" x-show="sourceLoaded"></div>
 
-    <main
-      @resize.window="resize(this)"
-      @drop.prevent="dropImage($event)"
-      @dragover.prevent="$event.dataTransfer.dropEffect = 'copy'"
-      x-ref="main"
-    >
+    <main @resize.window="resize(this)" @drop.prevent="dropImage($event)" @dragover.prevent="$event.dataTransfer.dropEffect = 'copy'" x-ref="main">
       <canvas width="800" height="600" x-ref="canvas" x-show="sourceLoaded" @dblclick="fullscreen"></canvas>
       <aside x-show="!sourceLoaded" @click="promptForFile">
         <b>Pixel Mash</b><br /><br />
@@ -95,14 +85,7 @@
       <form @submit.prevent="saveConfig">
         <div class="col">
           <label for="animationSpeed">Animation Speed</label>
-          <input
-            type="range"
-            x-model="$store.animationSpeed"
-            min="0.0"
-            max="5"
-            step="0.05"
-            @change="$store.renderComplete = false"
-          />
+          <input type="range" x-model="$store.animationSpeed" min="0.0" max="5" step="0.05" @change="$store.renderComplete = false" />
           <span x-text="$store.animationSpeed" x-show="$store.animationSpeed > 0"></span>
           <span x-show="$store.animationSpeed == 0">Disabled</span>
         </div>
