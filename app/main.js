@@ -29,7 +29,7 @@ Alpine.data('app', () => ({
     if (import.meta.env.DEV) {
       loadFromURL('img/kitty.jpg')
       this.sourceLoaded = true
-      this.addEffect('blur')
+      this.addEffect('slice')
     }
 
     console.log('🎉 Alpine.js initialized and app started')

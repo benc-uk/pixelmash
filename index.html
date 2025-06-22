@@ -30,15 +30,20 @@
                   type="range"
                   x-show="param.type === 'number'"
                   x-model="param.value"
-                  @change="$store.renderComplete = false"
                   :min="param.min"
                   :max="param.max"
                   :step="param.step"
+                  @change="$store.renderComplete = false"
                   @input="$store.renderComplete = false"
                 />
-                <input type="color" x-show="param.type === 'colour'" x-model="param.value" />
+                <input
+                  type="color"
+                  x-show="param.type === 'colour'"
+                  x-model="param.value"
+                  @change="$store.renderComplete = false"
+                />
                 <label class="switch" x-show="param.type === 'boolean'">
-                  <input type="checkbox" x-model="param.value" />
+                  <input type="checkbox" x-model="param.value" @change="$store.renderComplete = false" />
                   <span class="slider round"></span>
                 </label>
               </div>

@@ -8,7 +8,7 @@ import melt from '../assets/shaders/melt.frag.glsl?raw'
 import pixelate from '../assets/shaders/pixelate.frag.glsl?raw'
 import posterize from '../assets/shaders/posterize.frag.glsl?raw'
 import scanlines from '../assets/shaders/scanlines.frag.glsl?raw'
-import slices from '../assets/shaders/slices.frag.glsl?raw'
+import slice from '../assets/shaders/slice.frag.glsl?raw'
 import ripples from '../assets/shaders/ripples.frag.glsl?raw'
 import warp from '../assets/shaders/warp.frag.glsl?raw'
 import solarize from '../assets/shaders/solarize.frag.glsl?raw'
@@ -184,8 +184,8 @@ const effects = {
     fragShader: posterize,
   },
 
-  slices: {
-    name: 'slices',
+  slice: {
+    name: 'slice',
     params: {
       count: {
         type: 'number',
@@ -196,10 +196,10 @@ const effects = {
       },
       offset: {
         type: 'number',
-        value: 15,
-        min: 1,
-        max: 50,
-        step: 1,
+        value: 0.4,
+        min: 0.1,
+        max: 1,
+        step: 0.001,
       },
       jitter: {
         type: 'number',
@@ -209,7 +209,7 @@ const effects = {
         step: 0.1,
       },
     },
-    fragShader: slices,
+    fragShader: slice,
   },
 
   solarize: {
