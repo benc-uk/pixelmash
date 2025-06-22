@@ -12,6 +12,8 @@ Alpine.data('app', () => ({
   sourceLoaded: false,
   pickNewEffect: false,
   dragEffectIndex: -1,
+  showConf: false,
+  isFullscreen: false,
 
   /** @type {Object[]} */
   effects: [],
@@ -29,9 +31,11 @@ Alpine.data('app', () => ({
     if (import.meta.env.DEV) {
       loadFromURL('img/kitty.jpg')
       this.sourceLoaded = true
-      this.addEffect('slice')
+      this.addEffect('melt')
     }
 
+    Alpine.store('renderComplete', false)
+    Alpine.store('animationSpeed', 0)
     console.log('🎉 Alpine.js initialized and app started')
   },
 
@@ -39,9 +43,21 @@ Alpine.data('app', () => ({
     resizeCanvas()
   },
 
+  fullscreen() {
+    if (this.isFullscreen) {
+      document.exitFullscreen()
+    } else {
+      document.documentElement.requestFullscreen()
+    }
+    this.isFullscreen = !this.isFullscreen
+    this.$nextTick(() => {
+      resizeCanvas()
+    })
+  },
+
   dragNavSizer(event) {
     const newWid = event.clientX
-    if (newWid < 100 || newWid > 600) return
+    if (newWid < 190 || newWid > 600) return
     this.$refs.nav.style.width = `${newWid}px`
     this.$refs.main.style.width = `calc(100% - ${newWid}px)`
     this.$nextTick(() => {
@@ -91,6 +107,8 @@ Alpine.data('app', () => ({
    * @param {Event} event
    */
   async fileInputImage(event) {
+    console.log('📥 File input change event triggered')
+
     const fileInput = /** @type {HTMLInputElement} */ (event.target)
     if (!fileInput) {
       console.warn('No file input found or no files selected')
@@ -120,6 +138,7 @@ Alpine.data('app', () => ({
       console.warn('No file input found')
       return
     }
+    fileInput.value = '' // Reset the file input to allow re-selection of the same file
 
     fileInput.click()
   },
@@ -136,7 +155,8 @@ Alpine.data('app', () => ({
 
   save() {
     const link = document.createElement('a')
-    link.download = 'pixel-mash.png'
+    const timeStamp = new Date().toLocaleDateString() + '_' + new Date().toLocaleTimeString()
+    link.download = `pixel-mash-${timeStamp}.png`
     link.href = this.$refs.canvas.toDataURL('image/png')
     link.click()
   },
@@ -183,14 +203,15 @@ async function loadFromURL(imageURL) {
  * @param {File} file
  */
 async function loadImageFile(file) {
+  clearSource()
+
   if (file) {
     const reader = new FileReader()
     reader.onload = async (e) => {
-      // Decode the data into an image, only to give us width and height
+      // Decode the data into an image
       const img = new Image()
       img.onload = async () => {
-        const base64ImgData = /** @type {string} */ (e.target?.result)
-        await setSource(base64ImgData, img.width, img.height)
+        setSource(img)
         resizeCanvas()
       }
 

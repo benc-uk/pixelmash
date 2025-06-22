@@ -3,9 +3,16 @@ import Alpine from 'alpinejs'
 import passthroughShader from '../assets/shaders/_null.frag.glsl?raw'
 import vertShader from '../assets/shaders/_base.vert.glsl?raw'
 
+/** @type {WebGL2RenderingContext} */
 let gl
+
+/** @type {WebGLTexture | null} */
 let texture
-let bufferInfo
+
+/** @type {twgl.BufferInfo} */
+let quadBuffers
+
+/** @type {twgl.ProgramInfo} */
 let passThroughProgInfo
 
 /**
@@ -20,7 +27,7 @@ export async function init() {
   }
 
   // Note: preserveDrawingBuffer needed for saving the canvas as an image
-  gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true })
+  gl = /** @type {WebGL2RenderingContext} */ (canvas.getContext('webgl2', { preserveDrawingBuffer: true }))
   if (!gl) {
     console.error('💥 WebGL2 not supported!')
     return
@@ -30,7 +37,7 @@ export async function init() {
   console.log('🎨 WebGL2 initialized successfully')
 
   passThroughProgInfo = twgl.createProgramInfo(gl, [vertShader, passthroughShader])
-  bufferInfo = twgl.createBufferInfoFromArrays(gl, {
+  quadBuffers = twgl.createBufferInfoFromArrays(gl, {
     position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
   })
 
@@ -43,23 +50,17 @@ export async function init() {
 
 /**
  * Sets the source image for the rendering chain
- * @param {string} imageSrc
- * @param {number} width
- * @param {number} height
+ * @param {HTMLImageElement} image
  */
-export async function setSource(imageSrc, width, height) {
-  if (!imageSrc || !width || !height) return
-
+export async function setSource(image) {
   texture = twgl.createTexture(
     gl,
     {
-      src: imageSrc,
+      src: image.src,
       //@ts-ignore
       flipY: true,
-      width: width,
-      height: height,
-      //minMag: gl.NEAREST, // This makes the pixelation effects look better
-      minMag: gl.LINEAR,
+      width: image.width,
+      height: image.height,
     },
     () => {
       console.log('🖼️ Image loaded, canvas size updated:', gl.canvas.width, 'x', gl.canvas.height)
@@ -67,17 +68,16 @@ export async function setSource(imageSrc, width, height) {
     },
   )
 
-  gl.canvas.width = width
-  gl.canvas.height = height
+  gl.canvas.width = image.width
+  gl.canvas.height = image.height
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 
   // Resize all the effect frameBuffers to match the new canvas size
   const effects = Alpine.store('effects')
-
   if (!effects || effects.length === 0) return
   for (const effect of effects) {
     if (effect.frameBuffer) {
-      twgl.resizeFramebufferInfo(gl, effect.frameBuffer, undefined, width, height)
+      twgl.resizeFramebufferInfo(gl, effect.frameBuffer, undefined, image.width, image.height)
     }
   }
 }
@@ -111,11 +111,11 @@ function renderLoop() {
   // If no effects, use the passthrough shader to render the texture directly
   if (effects.length === 0 && texture) {
     gl.useProgram(passThroughProgInfo.program)
-    twgl.setBuffersAndAttributes(gl, passThroughProgInfo, bufferInfo)
+    twgl.setBuffersAndAttributes(gl, passThroughProgInfo, quadBuffers)
     twgl.setUniforms(passThroughProgInfo, {
       image: texture,
     })
-    twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES)
+    twgl.drawBufferInfo(gl, quadBuffers, gl.TRIANGLES)
 
     // Mark the render as complete, not super important when no effects in the chain
     Alpine.store('renderComplete', true)
@@ -123,6 +123,9 @@ function renderLoop() {
     requestAnimationFrame(renderLoop)
     return
   }
+
+  const anim = Alpine.store('animationSpeed') > 0
+  let hasTime = false
 
   // Loop through all effects and apply them by running the shader programs
   // in order, using the output of each effect as the input for the next
@@ -159,16 +162,28 @@ function renderLoop() {
         return acc
       }
 
+      if (key === 'time' && anim) {
+        hasTime = true
+        return acc
+      }
+
       acc[key] = param.value
       return acc
     }, {})
 
-    twgl.setBuffersAndAttributes(gl, effect.programInfo, bufferInfo)
+    // If any effect has a time parameter, and we are animating,
+    // we will update the time uniform for all effects
+    if (hasTime && anim) {
+      uniforms.time = (performance.now() / 1000) * Alpine.store('animationSpeed')
+      Alpine.store('renderComplete', false) // Force re-render
+    }
+
+    twgl.setBuffersAndAttributes(gl, effect.programInfo, quadBuffers)
     twgl.setUniforms(effect.programInfo, {
       ...uniforms,
       ...effectParamUniforms,
     })
-    twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES)
+    twgl.drawBufferInfo(gl, quadBuffers, gl.TRIANGLES)
   }
 
   // Request the next frame and loop forever

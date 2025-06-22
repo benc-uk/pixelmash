@@ -44,6 +44,11 @@ nav {
   min-width: 8rem;
 }
 
+.gone {
+  display: none;
+  visibility: hidden;
+}
+
 section {
   font-family: 'Comfortaa', sans-serif;
   display: flex;
@@ -133,9 +138,21 @@ button {
   color: var(--light);
   border: none;
   padding: 0.5rem;
-  border-radius: 0.2rem;
+  border-radius: 0;
   font-size: 1rem;
   cursor: pointer;
+}
+
+dialog {
+  background-color: var(--dark);
+  color: var(--vlight);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 0.2rem solid var(--med);
+  width: 30vw;
+  max-width: 500px;
+  top: 20%;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.7);
 }
 
 button:hover {

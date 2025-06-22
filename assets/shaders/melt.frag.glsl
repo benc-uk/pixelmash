@@ -11,13 +11,12 @@ out vec4 pixel;
 uniform float strength; // 0.0 to 1.0, how much to melt
 uniform float progress;   // time or animation offset
 uniform int drips;   // number of drips
-uniform float offset; // normalized horizontal offset [0.0, 1.0]
+uniform float time; // time offset for animation
 
 // INCLUDE_LIB
 
 void main() {
   float x = imgCoord.x;
-  float y = imgCoord.y;
   float dripOffset = 0.0;
 
   for(int i = 0; i < 64; ++i) {
@@ -26,7 +25,7 @@ void main() {
     // Use xOffset directly (and invert sign if needed for direction)
     float dripCenter = float(i) / float(drips - 1);
     float dripWidth = 0.04 + 0.06 * random(float(i) * 1.23);
-    float wrappedX = mod(x - offset + 1.0, 1.0); // ensures value stays in [0,1)
+    float wrappedX = mod(x - time * 0.1 + 1.0, 1.0); // ensures value stays in [0,1)
     float dist = min(abs(wrappedX - dripCenter), 1.0 - abs(wrappedX - dripCenter));
 
     if(dist < dripWidth) {

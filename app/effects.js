@@ -264,11 +264,11 @@ const effects = {
         max: 64,
         step: 1,
       },
-      offset: {
+      time: {
         type: 'number',
         value: 0.0,
         min: 0,
-        max: 0.5,
+        max: 5,
         step: 0.001,
       },
     },
