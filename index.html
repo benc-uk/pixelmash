@@ -78,17 +78,19 @@
       x-ref="main"
     >
       <canvas width="800" height="600" x-ref="canvas" x-show="sourceLoaded" @dblclick="fullscreen"></canvas>
-      <aside class="overlay" x-show="!sourceLoaded" @click="promptForFile">
+      <aside x-show="!sourceLoaded" @click="promptForFile">
         <b>Pixel Mash</b><br /><br />
         Drag and drop image here or click to upload
       </aside>
+      <aside x-show="!sourceLoaded" @click="openCamera" class="mt-30">Or use your camera</aside>
+
       <footer x-show="!sourceLoaded">
         <span x-text="`v${version}`"></span> - (C) Ben Coleman 2025 -
         <a href="https://github.com/benc-uk/pixelmash" target="_blank">benc-uk/pixelmash</a>
       </footer>
     </main>
 
-    <dialog x-show="showConf" @click.outside="showConf = false" open>
+    <dialog x-show="showConf" @click.outside="showConf = false" open x-cloak>
       <h2>Configuration</h2>
       <form @submit.prevent="saveConfig">
         <div class="col">

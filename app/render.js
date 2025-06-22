@@ -50,34 +50,47 @@ export async function init() {
 
 /**
  * Sets the source image for the rendering chain
- * @param {HTMLImageElement} image
+ * @param {HTMLImageElement | HTMLVideoElement} source
  */
-export async function setSource(image) {
+export async function setSource(source, width = 0, height = 0) {
+  const w = source.width || width
+  const h = source.height || height
+
+  // Used when the source is a video element, we can reuse the texture
+  if (texture != null) {
+    //@ts-ignore
+    twgl.setTextureFromElement(gl, texture, source, { flipY: true })
+    Alpine.store('renderComplete', false)
+    return
+  }
+
   texture = twgl.createTexture(
     gl,
     {
-      src: image.src,
+      src: source instanceof HTMLImageElement ? source.src : source,
       //@ts-ignore
       flipY: true,
-      width: image.width,
-      height: image.height,
+      width: w,
+      height: h,
     },
     () => {
-      console.log('🖼️ Image loaded, canvas size updated:', gl.canvas.width, 'x', gl.canvas.height)
+      console.log('📸 Image texture loaded, canvas size updated:', gl.canvas.width, 'x', gl.canvas.height)
       Alpine.store('renderComplete', false)
     },
   )
 
-  gl.canvas.width = image.width
-  gl.canvas.height = image.height
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  gl.canvas.width = w
+  gl.canvas.height = h
+  gl.viewport(0, 0, w, h)
 
   // Resize all the effect frameBuffers to match the new canvas size
   const effects = Alpine.store('effects')
   if (!effects || effects.length === 0) return
   for (const effect of effects) {
     if (effect.frameBuffer) {
-      twgl.resizeFramebufferInfo(gl, effect.frameBuffer, undefined, image.width, image.height)
+      console.log(`🔄 Resizing effect frameBuffer for ${effect.name} to ${w}x${h}`)
+
+      twgl.resizeFramebufferInfo(gl, effect.frameBuffer, undefined, w, h)
     }
   }
 }

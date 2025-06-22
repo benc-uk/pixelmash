@@ -6,6 +6,8 @@ import { clearSource, getGL, init as initRendering, setSource } from './render'
 import { createEffect, effectList } from './effects'
 import Alpine from 'alpinejs'
 
+let video = null
+
 Alpine.data('app', () => ({
   version: import.meta.env.PACKAGE_VERSION || 'unknown',
   sourceType: 'image',
@@ -29,9 +31,9 @@ Alpine.data('app', () => ({
 
     // For debugging & dev - when running locally in dev mode
     if (import.meta.env.DEV) {
-      loadFromURL('img/kitty.jpg')
-      this.sourceLoaded = true
-      this.addEffect('melt')
+      // loadFromURL('img/kitty.jpg')
+      // this.sourceLoaded = true
+      // this.addEffect('melt')
     }
 
     Alpine.store('renderComplete', false)
@@ -125,6 +127,42 @@ Alpine.data('app', () => ({
     this.sourceLoaded = true
   },
 
+  async openCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+      })
+      video = document.createElement('video')
+      video.srcObject = stream
+
+      let width = 1920
+      let height = 1080
+
+      video.addEventListener('loadedmetadata', () => {
+        height = video.videoHeight
+        width = video.videoWidth
+        console.log(`📷 Camera video opened with dimensions: ${width}x${height}`)
+        this.sourceLoaded = true
+        setTimeout(() => {
+          resizeCanvas()
+        }, 500) // Wait a bit for the video to stabilize
+      })
+
+      video.addEventListener('timeupdate', () => {
+        if (!video) return
+        setSource(video, width, height)
+      })
+
+      video.play()
+    } catch (error) {
+      console.error('Error accessing camera:', error)
+      alert('Could not access camera. Please check permissions.')
+    }
+  },
+
   async dropImage(event) {
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
       await loadImageFile(event.dataTransfer.files[0])
@@ -172,12 +210,7 @@ Alpine.data('app', () => ({
     }
 
     // If we are dropping on a different index, swap the effects
-    if (
-      this.dragEffectIndex >= 0 &&
-      this.dragEffectIndex < this.$store.effects.length &&
-      index >= 0 &&
-      index < this.$store.effects.length
-    ) {
+    if (this.dragEffectIndex >= 0 && this.dragEffectIndex < this.$store.effects.length && index >= 0 && index < this.$store.effects.length) {
       const temp = this.$store.effects[this.dragEffectIndex]
       this.$store.effects[this.dragEffectIndex] = this.$store.effects[index]
       this.$store.effects[index] = temp
@@ -191,6 +224,7 @@ Alpine.data('app', () => ({
 Alpine.start()
 
 /** @param {string} imageURL */
+//eslint-disable-next-line no-unused-vars
 async function loadFromURL(imageURL) {
   const res = await fetch(imageURL)
   const blob = await res.blob()
@@ -204,6 +238,16 @@ async function loadFromURL(imageURL) {
  */
 async function loadImageFile(file) {
   clearSource()
+
+  // Stop any existing video stream for the camera
+  if (video) {
+    const mediaStream = video.srcObject
+    if (mediaStream) {
+      const tracks = mediaStream.getTracks()
+      tracks.forEach((track) => track.stop())
+    }
+    video = null
+  }
 
   if (file) {
     const reader = new FileReader()
