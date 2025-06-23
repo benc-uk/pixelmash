@@ -10,9 +10,10 @@ This version is written in JS and uses Vite + Alpine.js for the UI and twgl + We
 
 ## Features
 
-- Image manipulation using WebGL shaders
+- Image & video manipulation using WebGL shaders
 - Multiple effects including pixelation, glitch, and more, see below
 - Camera support for live image manipulation
+- Can upload both images and videos
 - Animated effects
 - Reorder effects
 - Save images

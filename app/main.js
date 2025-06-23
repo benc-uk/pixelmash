@@ -11,7 +11,6 @@ let video = null
 
 Alpine.data('app', () => ({
   version: import.meta.env.PACKAGE_VERSION || 'unknown',
-  sourceType: 'image',
   sourceLoaded: false,
   pickNewEffect: false,
   dragEffectIndex: -1,
@@ -118,7 +117,7 @@ Alpine.data('app', () => ({
   },
 
   /**
-   * Guess that this one does?
+   * Guess what this one does?
    * @param {number} index
    */
   removeEffect(index) {
@@ -133,10 +132,10 @@ Alpine.data('app', () => ({
   },
 
   /**
-   * Load an image from a file input
+   * Load an image or video from the file input element
    * @param {Event} event
    */
-  async fileInputImage(event) {
+  async fileInputChanged(event) {
     const fileInput = /** @type {HTMLInputElement} */ (event.target)
     if (!fileInput) {
       console.warn('No file input found or no files selected')
@@ -149,7 +148,7 @@ Alpine.data('app', () => ({
     }
 
     const file = fileInput.files[0]
-    await loadImageFile(file)
+    await loadFile(file)
     this.sourceLoaded = true
   },
 
@@ -192,14 +191,14 @@ Alpine.data('app', () => ({
   },
 
   /**
-   * Handle dropping an image file onto the app
+   * Handle dropping an file onto the app
    * @param {DragEvent} event
    */
-  async dropImage(event) {
+  async dropFile(event) {
     if (!event || !event.dataTransfer) return
 
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-      await loadImageFile(event.dataTransfer.files[0])
+      await loadFile(event.dataTransfer.files[0])
       this.sourceLoaded = true
     }
   },
@@ -277,14 +276,14 @@ async function debug(imageURL) {
   const res = await fetch(imageURL)
   const blob = await res.blob()
   const file = new File([blob], imageURL, { type: 'image/jpeg' })
-  loadImageFile(file)
+  loadFile(file)
 }
 
 /**
- * Load an image file and set it as the source for rendering
+ * Load an file and set it as the source for rendering
  * @param {File} file
  */
-async function loadImageFile(file) {
+async function loadFile(file) {
   clearSource()
 
   // Stop any existing video stream for the camera
@@ -300,14 +299,38 @@ async function loadImageFile(file) {
   if (file) {
     const reader = new FileReader()
     reader.onload = async (e) => {
-      // Decode the data into an image
-      const img = new Image()
-      img.onload = async () => {
-        setSource(img)
-        resizeCanvas()
-      }
+      // Detect if the file is an image or video
+      const mimeType = file.type.toLowerCase()
+      if (mimeType.startsWith('video/')) {
+        // If it's a video, create a video element
+        video = document.createElement('video')
+        video.src = /** @type {string} */ (e.target?.result)
+        video.loop = true // Loop the video
+        video.crossOrigin = 'anonymous' // Handle CORS for remote videos
 
-      img.src = /** @type {string} */ (e.target?.result)
+        video.addEventListener('loadeddata', () => {
+          if (!video) return
+
+          const width = video.videoWidth
+          const height = video.videoHeight
+          setSource(video, width, height)
+          console.log(`📹 Video loaded with dimensions: ${width}x${height}`)
+          resizeCanvas()
+        })
+
+        video.play()
+      } else if (mimeType.startsWith('image/')) {
+        // If it's an image, create an Image object
+        const img = new Image()
+        img.src = /** @type {string} */ (e.target?.result)
+        img.crossOrigin = 'anonymous' // Handle CORS for remote images
+
+        img.onload = () => {
+          setSource(img, img.width, img.height)
+          console.log(`🖼️ Image loaded with dimensions: ${img.width}x${img.height}`)
+          resizeCanvas()
+        }
+      }
     }
 
     reader.readAsDataURL(file)
