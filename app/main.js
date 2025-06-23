@@ -10,15 +10,15 @@ import Alpine from 'alpinejs'
 let video = null
 
 Alpine.data('app', () => ({
+  /** @type {Effect[]} */
+  effects: [],
+
   version: import.meta.env.PACKAGE_VERSION || 'unknown',
   sourceLoaded: false,
   pickNewEffect: false,
   dragEffectIndex: -1,
   showConf: false,
   isFullscreen: false,
-
-  /** @type {Object[]} */
-  effects: [],
   effectList,
 
   /**
@@ -33,11 +33,11 @@ Alpine.data('app', () => ({
     this.resize()
 
     // For debugging & dev - when running locally in dev mode
-    // if (import.meta.env.DEV) {
-    //   loadFromURL('img/kitty.jpg')
-    //   this.sourceLoaded = true
-    //   this.addEffect('slice')
-    // }
+    if (import.meta.env.DEV) {
+      debug('img/weird.jpg')
+      this.sourceLoaded = true
+      this.addEffect('glow')
+    }
 
     Alpine.store('renderComplete', false)
     Alpine.store('animationSpeed', 0)
@@ -104,12 +104,15 @@ Alpine.data('app', () => ({
     this.pickNewEffect = false
     this.$refs.effectSelector.selectedIndex = 0
 
-    if (effectName === '__cancel__') {
-      console.log('Effect selection cancelled')
+    if (effectName === '__cancel__') return
+
+    const gl = getGL()
+    if (!gl) {
+      console.error('WebGL context not initialized')
       return
     }
 
-    const effect = createEffect(effectName, getGL())
+    const effect = createEffect(effectName, gl)
     this.$store.effects.push(effect)
 
     // Force a re-render
@@ -125,6 +128,7 @@ Alpine.data('app', () => ({
       console.warn('Invalid effect index:', index)
       return
     }
+
     this.$store.effects.splice(index, 1)
 
     // Force a re-render
@@ -286,7 +290,7 @@ async function debug(imageURL) {
 async function loadFile(file) {
   clearSource()
 
-  // Stop any existing video stream for the camera
+  // Stop any existing video stream
   if (video) {
     const mediaStream = /** @type {MediaStream} */ (video.srcObject)
     if (mediaStream) {
@@ -305,8 +309,7 @@ async function loadFile(file) {
         // If it's a video, create a video element
         video = document.createElement('video')
         video.src = /** @type {string} */ (e.target?.result)
-        video.loop = true // Loop the video
-        video.crossOrigin = 'anonymous' // Handle CORS for remote videos
+        video.loop = true
 
         video.addEventListener('loadeddata', () => {
           if (!video) return

@@ -8,7 +8,7 @@
     "allowJs": true, // Allows JavaScript files to be included
     "checkJs": true, // Enables type checking for JavaScript files
     "noEmit": true, // Prevents TypeScript from emitting compiled files
-    "types": ["vite/client"],
+    "types": ["vite/client", "./app/types"],
     "moduleResolution": "Node", // Use Node.js module resolution
     "target": "ESNext",
     "module": "ESNext", // Use ESNext to support import/export syntax

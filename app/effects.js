@@ -14,6 +14,7 @@ import warp from '../assets/shaders/warp.frag.glsl?raw'
 import solarize from '../assets/shaders/solarize.frag.glsl?raw'
 import rgb from '../assets/shaders/rgb.frag.glsl?raw'
 import barrelblur from '../assets/shaders/barrelblur.frag.glsl?raw'
+import glow from '../assets/shaders/glow.frag.glsl?raw'
 
 // This is the vertex shader used for all effects
 import libShader from '../assets/shaders/_lib.frag.glsl?raw'
@@ -422,6 +423,34 @@ const effects = {
     },
     fragShader: barrelblur,
   },
+
+  glow: {
+    name: 'glow',
+    params: {
+      size: {
+        type: 'number',
+        value: 0.5,
+        min: 0.0,
+        max: 40.0,
+        step: 0.01,
+      },
+      intensity: {
+        type: 'number',
+        value: 0.5,
+        min: 0.0,
+        max: 5.0,
+        step: 0.01,
+      },
+      threshold: {
+        type: 'number',
+        value: 0.5,
+        min: 0.0,
+        max: 1.0,
+        step: 0.01,
+      },
+    },
+    fragShader: glow,
+  },
 }
 
 export function effectList() {
@@ -433,6 +462,8 @@ export function effectList() {
 /**
  * Create a new effect instance
  * @param {string} name
+ * @param {WebGLRenderingContext} gl
+ * @returns {Effect} The effect instance
  */
 export function createEffect(name, gl) {
   if (!effects[name]) {
@@ -448,6 +479,7 @@ export function createEffect(name, gl) {
   const programInfo = twgl.createProgramInfo(gl, [vertShader, effectBase.fragShader])
   const frameBuffer = twgl.createFramebufferInfo(gl)
 
+  /** @type {Effect} */
   const effect = {
     name: effectBase.name,
     // This is a little trick to do a deep copy to avoid reference issues on the params
