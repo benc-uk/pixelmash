@@ -12,6 +12,7 @@ out vec4 pixel;
 // Effect uniforms
 uniform float cells;
 uniform float radius;
+uniform bool circles;
 
 void main() {
   float cellSize = (imageRes.x / cells); 
@@ -32,9 +33,21 @@ void main() {
   float dist = length(diff);
 
   float pixelRadius = radius * cellSize / imageRes.x;
-  if(dist < pixelRadius) {
-    pixel = pixelColor;
+
+  if(circles) {
+    // Circular mask
+    if(dist < pixelRadius) {
+      pixel = pixelColor;
+    } else {
+      pixel = vec4(0.0, 0.0, 0.0, 1.0);
+    }
   } else {
-    pixel = vec4(0.0, 0.0, 0.0, 1.0);
+    // Square mask
+    vec2 absDiff = abs(diff);
+    if(absDiff.x < pixelRadius && absDiff.y < pixelRadius) {
+      pixel = pixelColor;
+    } else {
+      pixel = vec4(0.0, 0.0, 0.0, 1.0);
+    }
   }
 }

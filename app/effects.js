@@ -80,6 +80,10 @@ const effects = {
         max: 1,
         step: 0.001,
       },
+      circles: {
+        type: 'boolean',
+        value: false,
+      },
     },
     fragShader: pixelate,
   },
