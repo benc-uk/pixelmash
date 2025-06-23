@@ -6,6 +6,7 @@ import { clearSource, getGL, init as initRendering, setSource } from './render'
 import { createEffect, effectList } from './effects'
 import Alpine from 'alpinejs'
 
+/** @type {HTMLVideoElement | null} */
 let video = null
 
 Alpine.data('app', () => ({
@@ -21,6 +22,9 @@ Alpine.data('app', () => ({
   effects: [],
   effectList,
 
+  /**
+   * Initialize the application, everything really starts here
+   */
   async init() {
     console.log(`🦄 Pixel Mosh ${this.version}`)
     this.$store.effects = []
@@ -30,21 +34,27 @@ Alpine.data('app', () => ({
     this.resize()
 
     // For debugging & dev - when running locally in dev mode
-    if (import.meta.env.DEV) {
-      loadFromURL('img/kitty.jpg')
-      this.sourceLoaded = true
-      this.addEffect('slice')
-    }
+    // if (import.meta.env.DEV) {
+    //   loadFromURL('img/kitty.jpg')
+    //   this.sourceLoaded = true
+    //   this.addEffect('slice')
+    // }
 
     Alpine.store('renderComplete', false)
     Alpine.store('animationSpeed', 0)
     console.log('🎉 Alpine.js initialized and app started')
   },
 
+  /**
+   * Wrapper for the resize function
+   */
   resize() {
     resizeCanvas()
   },
 
+  /**
+   * Toggle fullscreen mode for the app
+   */
   fullscreen() {
     if (this.isFullscreen) {
       document.exitFullscreen()
@@ -57,16 +67,26 @@ Alpine.data('app', () => ({
     })
   },
 
+  /**
+   * Handle drag events for the navigation sizer
+   * @param {DragEvent} event
+   */
   dragNavSizer(event) {
     const newWid = event.clientX
     if (newWid < 190 || newWid > 600) return
+
     this.$refs.nav.style.width = `${newWid}px`
     this.$refs.main.style.width = `calc(100% - ${newWid}px)`
+
     this.$nextTick(() => {
       resizeCanvas()
     })
   },
 
+  /**
+   * Show the effect selector dialog to pick a new effect
+   * This is really just to reduce the number of clicks needed to add an effect
+   */
   showEffectSelector() {
     this.pickNewEffect = true
     this.$refs.effectSelector.selectedIndex = 0
@@ -77,6 +97,10 @@ Alpine.data('app', () => ({
     })
   },
 
+  /**
+   * Add a new effect based on the selected option in the effect selector
+   * @param {string} effectName
+   */
   addEffect(effectName) {
     this.pickNewEffect = false
     this.$refs.effectSelector.selectedIndex = 0
@@ -93,6 +117,10 @@ Alpine.data('app', () => ({
     Alpine.store('renderComplete', false)
   },
 
+  /**
+   * Guess that this one does?
+   * @param {number} index
+   */
   removeEffect(index) {
     if (index < 0 || index >= this.$store.effects.length) {
       console.warn('Invalid effect index:', index)
@@ -109,8 +137,6 @@ Alpine.data('app', () => ({
    * @param {Event} event
    */
   async fileInputImage(event) {
-    console.log('📥 File input change event triggered')
-
     const fileInput = /** @type {HTMLInputElement} */ (event.target)
     if (!fileInput) {
       console.warn('No file input found or no files selected')
@@ -127,6 +153,10 @@ Alpine.data('app', () => ({
     this.sourceLoaded = true
   },
 
+  /**
+   * Open the camera and start streaming video
+   * This will create a video element and set it as the source for rendering
+   */
   async openCamera() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -141,19 +171,17 @@ Alpine.data('app', () => ({
       let width = 1920
       let height = 1080
 
-      video.addEventListener('loadedmetadata', () => {
+      video.addEventListener('loadeddata', () => {
+        if (!video) return
+
         height = video.videoHeight
         width = video.videoWidth
-        console.log(`📷 Camera video opened with dimensions: ${width}x${height}`)
-        this.sourceLoaded = true
-        setTimeout(() => {
-          resizeCanvas()
-        }, 500) // Wait a bit for the video to stabilize
-      })
 
-      video.addEventListener('timeupdate', () => {
-        if (!video) return
+        this.sourceLoaded = true
         setSource(video, width, height)
+        console.log(`📷 Camera video opened with dimensions: ${width}x${height}`)
+
+        resizeCanvas()
       })
 
       video.play()
@@ -163,34 +191,46 @@ Alpine.data('app', () => ({
     }
   },
 
+  /**
+   * Handle dropping an image file onto the app
+   * @param {DragEvent} event
+   */
   async dropImage(event) {
+    if (!event || !event.dataTransfer) return
+
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
       await loadImageFile(event.dataTransfer.files[0])
       this.sourceLoaded = true
     }
   },
 
+  /**
+   * Prompt the user to select a file using the hidden file input
+   */
   async promptForFile() {
     const fileInput = /** @type {HTMLInputElement} */ (this.$refs.fileInput)
     if (!fileInput) {
       console.warn('No file input found')
       return
     }
-    fileInput.value = '' // Reset the file input to allow re-selection of the same file
 
+    // Trigger a click on the hidden file input to open the file dialog
+    fileInput.value = ''
     fileInput.click()
   },
 
+  /**
+   * Clear the current source and reset the application state
+   */
   clear() {
     this.$store.effects = []
     this.sourceLoaded = false
     clearSource()
-    this.$refs.main.style.width = '100%'
-    this.$nextTick(() => {
-      resizeCanvas()
-    })
   },
 
+  /**
+   * Save the current canvas as a PNG file
+   */
   save() {
     const link = document.createElement('a')
     const timeStamp = new Date().toLocaleDateString() + '_' + new Date().toLocaleTimeString()
@@ -199,10 +239,18 @@ Alpine.data('app', () => ({
     link.click()
   },
 
+  /**
+   * Start dragging an effect to reorder it
+   * @param {number} index
+   */
   dragEffectStart(index) {
     this.dragEffectIndex = index
   },
 
+  /**
+   * Handle dragging an effect over another effect, will reorder them
+   * @param {number} index
+   */
   dragEffectDrop(index) {
     // If we are dropping on the same index, do nothing
     if (this.dragEffectIndex === index) {
@@ -221,11 +269,11 @@ Alpine.data('app', () => ({
   },
 }))
 
+// Whoooo, begin the Alpine.js magic
 Alpine.start()
 
-/** @param {string} imageURL */
 //eslint-disable-next-line no-unused-vars
-async function loadFromURL(imageURL) {
+async function debug(imageURL) {
   const res = await fetch(imageURL)
   const blob = await res.blob()
   const file = new File([blob], imageURL, { type: 'image/jpeg' })
@@ -241,7 +289,7 @@ async function loadImageFile(file) {
 
   // Stop any existing video stream for the camera
   if (video) {
-    const mediaStream = video.srcObject
+    const mediaStream = /** @type {MediaStream} */ (video.srcObject)
     if (mediaStream) {
       const tracks = mediaStream.getTracks()
       tracks.forEach((track) => track.stop())

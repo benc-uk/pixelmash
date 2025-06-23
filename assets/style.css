@@ -46,7 +46,7 @@ canvas {
 nav {
   background-color: var(--dark);
   width: 18vw;
-  min-width: 8rem;
+  min-width: 190px;
   overflow-y: auto;
 }
 

@@ -15,6 +15,11 @@ let quadBuffers
 /** @type {twgl.ProgramInfo} */
 let passThroughProgInfo
 
+/** * The source image or video element to render
+ * @type {HTMLImageElement | HTMLVideoElement | null}
+ */
+let currentSource = null
+
 /**
  * Initializes the WebGL2 context and sets up the rendering pipeline
  * - also kicks off the rendering loop
@@ -56,20 +61,12 @@ export async function setSource(source, width = 0, height = 0) {
   const w = source.width || width
   const h = source.height || height
 
-  // Used when the source is a video element, we can reuse the texture
-  if (texture != null) {
-    //@ts-ignore
-    twgl.setTextureFromElement(gl, texture, source, { flipY: true })
-    Alpine.store('renderComplete', false)
-    return
-  }
-
+  currentSource = source
   texture = twgl.createTexture(
     gl,
     {
       src: source instanceof HTMLImageElement ? source.src : source,
-      //@ts-ignore
-      flipY: true,
+      flipY: 1,
       width: w,
       height: h,
       minMag: gl.LINEAR,
@@ -89,8 +86,6 @@ export async function setSource(source, width = 0, height = 0) {
   if (!effects || effects.length === 0) return
   for (const effect of effects) {
     if (effect.frameBuffer) {
-      console.log(`🔄 Resizing effect frameBuffer for ${effect.name} to ${w}x${h}`)
-
       twgl.resizeFramebufferInfo(gl, effect.frameBuffer, undefined, w, h)
     }
   }
@@ -108,10 +103,18 @@ export function clearSource() {
  * Main rendering loop
  */
 function renderLoop() {
-  // A caching mechanism to avoid unnecessary rendering
-  // Skip rendering if no parameters have been changed or the source hasn't changed
-  const renderEffects = Alpine.store('renderComplete')
-  if (renderEffects) {
+  let skipRender = Alpine.store('renderComplete')
+
+  // Video elements need to be updated every frame
+  if (currentSource instanceof HTMLVideoElement) {
+    if (texture) {
+      twgl.setTextureFromElement(gl, texture, currentSource, { flipY: 1 })
+    }
+    skipRender = false
+  }
+
+  // A caching mechanism to avoid unnecessary rendering, only works if the source is a static image
+  if (skipRender) {
     requestAnimationFrame(renderLoop)
     return
   }
