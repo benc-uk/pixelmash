@@ -72,6 +72,7 @@ export async function setSource(source, width = 0, height = 0) {
       flipY: true,
       width: w,
       height: h,
+      minMag: gl.LINEAR,
     },
     () => {
       console.log('📸 Image texture loaded, canvas size updated:', gl.canvas.width, 'x', gl.canvas.height)
