@@ -34,12 +34,11 @@ Alpine.data('app', () => ({
     this.resize()
 
     // For debugging & dev - when running locally in dev mode
-    if (import.meta.env.DEV) {
-      debug('img/kitty.jpg')
-      this.sourceLoaded = true
-      this.addEffect('warp')
-      // this.addEffect('glow')
-    }
+    // if (import.meta.env.DEV) {
+    //   debug('img/kitty.jpg')
+    //   this.sourceLoaded = true
+    //   this.addEffect('warp')
+    // }
 
     Alpine.store('renderComplete', false)
     Alpine.store('animationSpeed', 0)

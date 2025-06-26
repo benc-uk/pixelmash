@@ -48,7 +48,7 @@
               x-show="showAdvancedScript"
               x-model="effect.advancedScript"
               @change="$store.renderComplete = false"
-              @input="$store.renderComplete = false" 
+              @input="$store.renderComplete = false"
             ></textarea>
           </form>
         </section>
@@ -96,10 +96,10 @@
           <span x-text="$store.animationSpeed" x-show="$store.animationSpeed > 0"></span>
           <span x-show="$store.animationSpeed == 0">Disabled</span>
         </div>
-        <div class="col mt-20"></div>
+        <div class="col mt-20">
           <label for="showAdvancedScript">Advanced Mode</label>
           <label class="switch">
-            <input type="checkbox" id="showAdvancedScript" @change="toggleAdvanced($event.target.checked)" x-model="showAdvancedScript"/>
+            <input type="checkbox" id="showAdvancedScript" @change="toggleAdvanced($event.target.checked)" x-model="showAdvancedScript" />
             <span class="slider round"></span>
           </label>
         </div>
