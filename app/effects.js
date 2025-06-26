@@ -15,6 +15,7 @@ import solarize from '../assets/shaders/solarize.frag.glsl?raw'
 import rgb from '../assets/shaders/rgb.frag.glsl?raw'
 import barrelblur from '../assets/shaders/barrelblur.frag.glsl?raw'
 import glow from '../assets/shaders/glow.frag.glsl?raw'
+import hue from '../assets/shaders/hue.frag.glsl?raw'
 
 // This is the vertex shader used for all effects
 import libShader from '../assets/shaders/_lib.frag.glsl?raw'
@@ -451,6 +452,28 @@ const effects = {
     },
     fragShader: glow,
   },
+
+  huesat: {
+    name: 'huesat',
+    params: {
+      time: {
+        type: 'number',
+        value: 0.5,
+        min: 0.0,
+        max: 1.0,
+        step: 0.01,
+      },
+      saturation: {
+        type: 'number',
+        value: 1.0,
+        min: 0.0,
+        max: 5.0,
+        step: 0.01,
+      },
+    },
+    fragShader: hue,
+    animated: true,
+  },
 }
 
 export function effectList() {
@@ -488,6 +511,7 @@ export function createEffect(name, gl) {
     programInfo, // GL program info for rendering the effect shader
     folded: false, // Whether the effect is folded in the UI
     animated: effectBase.animated || false, // Whether the effect is animated
+    advancedScript: undefined, // Optional advanced script for the effect
   }
 
   return effect
