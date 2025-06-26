@@ -272,6 +272,24 @@ Alpine.data('app', () => ({
     // Force a re-render
     Alpine.store('renderComplete', false)
   },
+
+  toggleAdvanced(value) {
+    const acceptedWarning = localStorage.getItem('acceptedWarning')
+
+    if (value && !acceptedWarning) {
+      const confirmed = confirm(
+        'This is an advanced feature for experienced users, it will allow you to modify effect parameters in unexpected ways. Do you want to proceed?',
+      )
+
+      if (!confirmed) {
+        this.showAdvancedScript = false
+        return
+      }
+
+      localStorage.setItem('acceptedWarning', 'true')
+    }
+    this.showAdvancedScript = value
+  },
 }))
 
 // Whoooo, begin the Alpine.js magic
