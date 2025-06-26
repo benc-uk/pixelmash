@@ -99,13 +99,14 @@ select {
 
 aside {
   background-color: black;
-  font-size: calc(1.5rem + 0.7vw);
+  font-size: calc(1.5rem + 0.2vw);
   padding: 2rem;
   margin: 0 auto;
   border: 0.2rem solid var(--med);
   border-radius: 1rem;
   color: var(--med);
   width: 30vw;
+  min-width: 300px;
   text-align: center;
   cursor: pointer;
 }
@@ -116,9 +117,9 @@ aside:hover {
 }
 
 aside h2 {
-  font-size: calc(2.2rem + 0.9vw);
+  font-size: calc(2rem + 0.2vw);
   margin: 0.8rem 1rem;
-  color: var(--accent-dark);
+  color: var(--accent);
 }
 
 footer {
@@ -261,4 +262,13 @@ textarea {
   border: none;
   padding: 0.2rem;
   font-family: 'Consolas', sans-serif;
+}
+
+.icon {
+  font-size: 1.5rem !important;
+}
+
+.red {
+  color: rgb(221, 67, 67);
+  background-color: rgb(77, 46, 46);
 }

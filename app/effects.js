@@ -456,7 +456,7 @@ const effects = {
   huesat: {
     name: 'huesat',
     params: {
-      time: {
+      hue: {
         type: 'number',
         value: 0.5,
         min: 0.0,

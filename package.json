@@ -1,7 +1,7 @@
 {
   "name": "pixel-mash",
   "private": true,
-  "version": "0.0.1-beta.9",
+  "version": "0.0.1-beta.10",
   "type": "module",
   "author": "Ben Coleman",
   "license": "MIT",
@@ -21,6 +21,7 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
+    "@vscode/codicons": "^0.0.36",
     "alpinejs": "^3.14.9",
     "twgl.js": "^6.1.1",
     "vite-plugin-package-version": "^1.1.0"

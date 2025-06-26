@@ -1,13 +1,18 @@
 import '../assets/style.css'
 import '../assets/helpers.css'
 import '../assets/toggle.css'
+import '@vscode/codicons/dist/codicon.css'
 
 import { clearSource, getGL, init as initRendering, setSource } from './render'
 import { createEffect, effectList } from './effects'
 import Alpine from 'alpinejs'
+import { showToast } from './toast'
 
 /** @type {HTMLVideoElement | null} */
 let video = null
+
+/** @type {MediaRecorder | null} */
+let mediaRecorder = null
 
 Alpine.data('app', () => ({
   /** @type {Effect[]} */
@@ -20,6 +25,7 @@ Alpine.data('app', () => ({
   showConf: false,
   showAdvancedScript: false,
   isFullscreen: false,
+  isCapturing: false,
   effectList,
 
   /**
@@ -34,11 +40,11 @@ Alpine.data('app', () => ({
     this.resize()
 
     // For debugging & dev - when running locally in dev mode
-    // if (import.meta.env.DEV) {
-    //   debug('img/kitty.jpg')
-    //   this.sourceLoaded = true
-    //   this.addEffect('warp')
-    // }
+    if (import.meta.env.DEV) {
+      debug('img/kitty.jpg')
+      this.sourceLoaded = true
+      this.addEffect('warp')
+    }
 
     Alpine.store('renderComplete', false)
     Alpine.store('animationSpeed', 0)
@@ -104,8 +110,6 @@ Alpine.data('app', () => ({
   addEffect(effectName) {
     this.pickNewEffect = false
     this.$refs.effectSelector.selectedIndex = 0
-
-    if (effectName === '__cancel__') return
 
     const gl = getGL()
     if (!gl) {
@@ -183,6 +187,7 @@ Alpine.data('app', () => ({
 
         this.sourceLoaded = true
         setSource(video, width, height)
+        showToast('Camera video opened!', 2000, 'top-center', 'primary')
         console.log(`📷 Camera video opened with dimensions: ${width}x${height}`)
 
         resizeCanvas()
@@ -236,6 +241,7 @@ Alpine.data('app', () => ({
    * Save the current canvas as a PNG file
    */
   save() {
+    showToast('Saving image...', 1000, 'top-center', 'primary')
     const link = document.createElement('a')
     const timeStamp = new Date().toLocaleDateString() + '_' + new Date().toLocaleTimeString()
     link.download = `pixel-mash-${timeStamp}.png`
@@ -272,6 +278,10 @@ Alpine.data('app', () => ({
     Alpine.store('renderComplete', false)
   },
 
+  /**
+   * Toggle the advanced script editor for effects
+   * @param {boolean} value
+   */
   toggleAdvanced(value) {
     const acceptedWarning = localStorage.getItem('acceptedWarning')
 
@@ -289,12 +299,51 @@ Alpine.data('app', () => ({
     }
     this.showAdvancedScript = value
   },
+
+  /**
+   * Start or stop capturing the video from the canvas
+   * This will create a MediaRecorder and start recording the canvas stream
+   */
+  captureVideo() {
+    if (this.isCapturing) {
+      if (mediaRecorder) {
+        mediaRecorder.stop()
+        mediaRecorder = null
+      }
+      this.isCapturing = false
+      return
+    }
+
+    const stream = this.$refs.canvas.captureStream(60)
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/mp4' })
+
+    const chunks = []
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data)
+      }
+    }
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/mp4' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `pixel-mash-${new Date().toISOString()}.mp4`
+      link.click()
+      URL.revokeObjectURL(url)
+    }
+
+    mediaRecorder.start()
+    showToast('Recording started. Click again to stop & save', 2000, 'top-center', 'primary')
+    this.isCapturing = true
+  },
 }))
 
 // Whoooo, begin the Alpine.js magic
 Alpine.start()
 
-//eslint-disable-next-line no-unused-vars
+//zzzzeslint-disable-next-line no-unused-vars
 async function debug(imageURL) {
   const res = await fetch(imageURL)
   const blob = await res.blob()

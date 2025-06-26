@@ -9,7 +9,7 @@ out vec4 pixel;
 
 // Effect uniforms
 uniform float saturation; // Range: 0 to 1
-uniform float time;
+uniform float hue;
 
 // INCLUDE_LIB
 
@@ -20,7 +20,7 @@ void main() {
   vec3 hsv = rgb2hsv(inPixel.rgb);
 
   // Adjust hue and saturation
-  hsv.x += time; // Adjust hue
+  hsv.x += hue; // Adjust hue
   hsv.y *= saturation; // Adjust saturation
 
   // Ensure hue is wrapped around [0, 1]

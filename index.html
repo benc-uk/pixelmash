@@ -55,19 +55,29 @@
       </template>
 
       <div class="row">
-        <button class="wide" x-show="!pickNewEffect && sourceLoaded" @click="showEffectSelector">Add Effect</button>
-        <select x-show="pickNewEffect" @change="addEffect($event.target.value)" class="wide" x-ref="effectSelector">
+        <button class="wide" x-show="!pickNewEffect && sourceLoaded" @click="showEffectSelector">
+          <span class="codicon codicon-filter"></span> Add Effect
+        </button>
+        <select
+          x-show="pickNewEffect"
+          @change="addEffect($event.target.value)"
+          class="wide"
+          x-ref="effectSelector"
+          @click.outside="pickNewEffect = false"
+        >
           <option disabled selected>Choose effect</option>
           <template x-for="(effectName, index) in effectList" :key="index">
             <option :value="effectName" x-text="effectName"></option>
           </template>
-          <option value="__cancel__" style="text-align: center">CANCEL</option>
         </select>
       </div>
       <div class="row">
-        <button class="wide" @click="clear">Clear</button>
-        <button class="wide" @click="save">Save</button>
-        <button class="wide" @click="showConf = true">Conf</button>
+        <button class="wide" @click="clear"><span class="codicon codicon-chrome-close icon"></span></button>
+        <button class="wide" @click="showConf = true"><span class="codicon codicon-settings icon"></span></button>
+        <button class="wide" @click="save"><span class="codicon codicon-device-camera icon"></span></button>
+        <button class="wide" @click="captureVideo" :class="{ red: isCapturing }">
+          <span class="codicon codicon-device-camera-video icon"></span>
+        </button>
       </div>
     </nav>
 
