@@ -225,13 +225,12 @@ input[type='range'] {
   appearance: none;
   background-color: var(--darkest);
   height: 1rem;
-  border-radius: 0.2rem;
 }
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 0.1rem;
+  width: 3px;
   height: 1rem;
   border-radius: 0%;
   background-color: var(--vlight);
@@ -252,4 +251,14 @@ label {
   width: 100%;
   font-size: 0.8rem;
   color: var(--accent);
+}
+
+textarea {
+  width: 98%;
+  height: 50px;
+  background-color: var(--darkest);
+  color: var(--vlight);
+  border: none;
+  padding: 0.2rem;
+  font-family: 'Consolas', sans-serif;
 }

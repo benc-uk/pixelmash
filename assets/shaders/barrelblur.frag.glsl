@@ -15,8 +15,6 @@ uniform float offset;
 uniform float strength;
 uniform float chromatic;
 
-// INCLUDE_LIB
-
 void main() {
   vec2 center = vec2(0.5, 0.5);
   vec2 uv = imgCoord;

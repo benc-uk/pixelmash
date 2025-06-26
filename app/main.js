@@ -18,6 +18,7 @@ Alpine.data('app', () => ({
   pickNewEffect: false,
   dragEffectIndex: -1,
   showConf: false,
+  showAdvancedScript: false,
   isFullscreen: false,
   effectList,
 
@@ -34,9 +35,10 @@ Alpine.data('app', () => ({
 
     // For debugging & dev - when running locally in dev mode
     if (import.meta.env.DEV) {
-      debug('img/weird.jpg')
+      debug('img/kitty.jpg')
       this.sourceLoaded = true
-      this.addEffect('glow')
+      this.addEffect('warp')
+      // this.addEffect('glow')
     }
 
     Alpine.store('renderComplete', false)

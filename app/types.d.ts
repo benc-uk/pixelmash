@@ -14,4 +14,5 @@ declare type Effect = {
   programInfo: any
   folded: boolean
   animated: boolean
+  advancedScript?: string
 }

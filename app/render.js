@@ -20,6 +20,17 @@ let passThroughProgInfo
  */
 let currentSource = null
 
+// Current time in seconds, used for animations
+let t = 0
+
+// Context only used for advanced script execution, provides utility functions
+const advContext = {
+  sinTime: (s) => (Math.sin(t * s) + 1) * 0.5,
+  rampTime: (speed) => (t * speed) % 1,
+  norm: (v, min = 0, max = 1) => (v - min) / (max - min),
+  rand: (min = 0, max = 1) => Math.random() * (max - min) + min,
+}
+
 /**
  * Initializes the WebGL2 context and sets up the rendering pipeline
  * - also kicks off the rendering loop
@@ -119,6 +130,8 @@ function renderLoop() {
     return
   }
 
+  t = performance.now() / 1000
+
   gl.clearColor(0, 0, 0, 1)
   gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -147,6 +160,7 @@ function renderLoop() {
   // Loop through all effects and apply them by running the shader programs
   // in order, using the output of each effect as the input for the next
   for (let i = 0; i < effects.length; i++) {
+    /** @type {Effect} */
     const effect = effects[i]
 
     const uniforms = {
@@ -173,9 +187,9 @@ function renderLoop() {
     }
 
     // Process the effect's parameters and convert them to uniforms
-    const effectParamUniforms = Object.entries(effect.params).reduce((acc, [key, param]) => {
+    const effectUniforms = Object.entries(effect.params).reduce((acc, [key, param]) => {
       if (param.type === 'colour') {
-        acc[key] = hexColourToTuple(param.value)
+        acc[key] = hexColourToTuple('' + param.value)
         return acc
       }
 
@@ -185,15 +199,29 @@ function renderLoop() {
 
     // If the effect is animated, fuck about with the time parameter
     if (anyEffectAnimated && animEnabled) {
-      delete effectParamUniforms['time']
-      uniforms.time = (performance.now() / 1000) * Alpine.store('animationSpeed')
+      effectUniforms['time'] = t * Alpine.store('animationSpeed')
       Alpine.store('renderComplete', false)
+    }
+
+    // This allows for all sorts of crazy shenanigans, and is only for very advanced users
+    const advancedScript = effect.advancedScript
+    let overrideUniforms = {}
+    if (advancedScript) {
+      Alpine.store('renderComplete', false)
+      try {
+        const scriptFunc = new Function(...Object.keys(advContext), `"use strict"; return { ${advancedScript} }`)
+        overrideUniforms = scriptFunc(...Object.values(advContext))
+      } catch (error) {
+        // Suppress the error
+        error
+      }
     }
 
     twgl.setBuffersAndAttributes(gl, effect.programInfo, quadBuffers)
     twgl.setUniforms(effect.programInfo, {
       ...uniforms,
-      ...effectParamUniforms,
+      ...effectUniforms,
+      ...overrideUniforms,
     })
     twgl.drawBufferInfo(gl, quadBuffers, gl.TRIANGLES)
   }
