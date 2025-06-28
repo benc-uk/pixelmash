@@ -23,6 +23,10 @@ let currentSource = null
 // Current time in seconds, used for animations
 let t = 0
 
+let currentFPS = 0
+let frameCount = 0
+let lastTime = 0
+
 // Context only used for advanced script execution, provides utility functions
 const advContext = {
   sinTime: (s) => (Math.sin(t * s) + 1) * 0.5,
@@ -84,7 +88,6 @@ export async function setSource(source, width = 0, height = 0) {
     },
     () => {
       console.log('📸 Image texture loaded, canvas size updated:', gl.canvas.width, 'x', gl.canvas.height)
-      Alpine.store('renderComplete', false)
     },
   )
 
@@ -114,20 +117,11 @@ export function clearSource() {
  * Main rendering loop
  */
 function renderLoop() {
-  let skipRender = Alpine.store('renderComplete')
-
   // Video elements need to be updated every frame
   if (currentSource instanceof HTMLVideoElement) {
     if (texture) {
       twgl.setTextureFromElement(gl, texture, currentSource, { flipY: 1 })
     }
-    skipRender = false
-  }
-
-  // A caching mechanism to avoid unnecessary rendering, only works if the source is a static image
-  if (skipRender) {
-    requestAnimationFrame(renderLoop)
-    return
   }
 
   t = performance.now() / 1000
@@ -146,9 +140,6 @@ function renderLoop() {
       image: texture,
     })
     twgl.drawBufferInfo(gl, quadBuffers, gl.TRIANGLES)
-
-    // Mark the render as complete, not super important when no effects in the chain
-    Alpine.store('renderComplete', true)
 
     requestAnimationFrame(renderLoop)
     return
@@ -180,7 +171,6 @@ function renderLoop() {
     if (i === effects.length - 1) {
       // Last effect, render out to screen, & freeze the rendering
       twgl.bindFramebufferInfo(gl, null)
-      Alpine.store('renderComplete', true)
     } else {
       // When not the last effect, render into the effect's framebuffer
       twgl.bindFramebufferInfo(gl, effect.frameBuffer)
@@ -200,14 +190,12 @@ function renderLoop() {
     // If the effect is animated, fuck about with the time parameter
     if (anyEffectAnimated && animEnabled) {
       effectUniforms['time'] = t * Alpine.store('animationSpeed')
-      Alpine.store('renderComplete', false)
     }
 
     // This allows for all sorts of crazy shenanigans, and is only for very advanced users
     const advancedScript = effect.advancedScript
     let overrideUniforms = {}
     if (advancedScript) {
-      Alpine.store('renderComplete', false)
       try {
         const scriptFunc = new Function(...Object.keys(advContext), `"use strict"; return { ${advancedScript} }`)
         overrideUniforms = scriptFunc(...Object.values(advContext))
@@ -224,6 +212,17 @@ function renderLoop() {
       ...overrideUniforms,
     })
     twgl.drawBufferInfo(gl, quadBuffers, gl.TRIANGLES)
+  }
+
+  // Update the FPS every 3 second
+  frameCount++
+  const now = performance.now()
+  if (now - lastTime >= 1000) {
+    currentFPS = frameCount
+    frameCount = 0
+    lastTime = now
+
+    Alpine.store('fps', currentFPS)
   }
 
   // Request the next frame and loop forever

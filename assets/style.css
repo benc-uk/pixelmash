@@ -272,3 +272,14 @@ textarea {
   color: rgb(221, 67, 67);
   background-color: rgb(77, 46, 46);
 }
+
+time {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: var(--darker);
+  color: var(--vlight);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.2rem;
+  font-size: 1.1rem;
+}

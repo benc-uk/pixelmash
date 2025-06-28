@@ -27,6 +27,7 @@ Alpine.data('app', () => ({
   isFullscreen: false,
   isCapturing: false,
   effectList,
+  showFPS: false,
 
   /**
    * Initialize the application, everything really starts here
@@ -41,13 +42,21 @@ Alpine.data('app', () => ({
 
     // For debugging & dev - when running locally in dev mode
     if (import.meta.env.DEV) {
-      debug('img/kitty.jpg')
+      debug('img/gnt.jpg')
       this.sourceLoaded = true
-      this.addEffect('warp')
+      this.addEffect('blur')
     }
 
-    Alpine.store('renderComplete', false)
     Alpine.store('animationSpeed', 0)
+
+    // Listen for the d key to toggle FPS display
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'd' || event.key === 'D') {
+        this.showFPS = !this.showFPS
+        Alpine.store('fps', 0)
+      }
+    })
+
     console.log('🎉 Alpine.js initialized and app started')
   },
 
@@ -119,9 +128,6 @@ Alpine.data('app', () => ({
 
     const effect = createEffect(effectName, gl)
     this.$store.effects.push(effect)
-
-    // Force a re-render
-    Alpine.store('renderComplete', false)
   },
 
   /**
@@ -135,9 +141,6 @@ Alpine.data('app', () => ({
     }
 
     this.$store.effects.splice(index, 1)
-
-    // Force a re-render
-    Alpine.store('renderComplete', false)
   },
 
   /**
@@ -273,9 +276,6 @@ Alpine.data('app', () => ({
       this.$store.effects[this.dragEffectIndex] = this.$store.effects[index]
       this.$store.effects[index] = temp
     }
-
-    // Force a re-render
-    Alpine.store('renderComplete', false)
   },
 
   /**

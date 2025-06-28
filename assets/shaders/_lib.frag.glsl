@@ -1,5 +1,8 @@
 // Ignore the linting errors in this file, it is a fragment of a shader which is concatenated with other shaders
 
+const float TWO_PI = 6.283185307179586;
+const float PI = 3.141592653589793;
+
 vec3 rgb2hsv(vec3 c) {
   vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
   vec4 p = c.g < c.b ? vec4(c.bg, K.wz) : vec4(c.gb, K.xy);
@@ -24,7 +27,7 @@ vec2 random2(vec2 n) {
 }
 
 vec2 randomDir(float seed) {
-  float angle = random(seed) * 6.2831853; // 2*PI
+  float angle = random(seed) * TWO_PI;
   return vec2(cos(angle), sin(angle));
 }
 

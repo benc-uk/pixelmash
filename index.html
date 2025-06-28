@@ -33,23 +33,17 @@
                   :min="param.min"
                   :max="param.max"
                   :step="param.step"
-                  @change="$store.renderComplete = false"
-                  @input="$store.renderComplete = false"
+                  :readonly="true"
                 />
-                <input type="color" x-show="param.type === 'colour'" x-model="param.value" @change="$store.renderComplete = false" />
+                <input type="color" x-show="param.type === 'colour'" x-model="param.value" />
                 <label class="switch" x-show="param.type === 'boolean'">
-                  <input type="checkbox" x-model="param.value" @change="$store.renderComplete = false" />
+                  <input type="checkbox" x-model="param.value" />
                   <span class="slider round"></span>
                 </label>
               </div>
             </template>
             <label x-show="showAdvancedScript" class="mt-10">advanced script</label>
-            <textarea
-              x-show="showAdvancedScript"
-              x-model="effect.advancedScript"
-              @change="$store.renderComplete = false"
-              @input="$store.renderComplete = false"
-            ></textarea>
+            <textarea x-show="showAdvancedScript" x-model="effect.advancedScript"></textarea>
           </form>
         </section>
       </template>
@@ -97,12 +91,14 @@
       </footer>
     </main>
 
+    <time x-show="showFPS" x-text="`${$store.fps} FPS`"></time>
+
     <dialog x-show="showConf" @click.outside="showConf = false" open x-cloak>
       <h2>Configuration</h2>
       <form @submit.prevent="saveConfig">
         <div class="col">
           <label for="animationSpeed">Animation Speed</label>
-          <input type="range" x-model="$store.animationSpeed" min="0.0" max="5" step="0.05" @change="$store.renderComplete = false" />
+          <input type="range" x-model="$store.animationSpeed" min="0.0" max="5" step="0.05" />
           <span x-text="$store.animationSpeed" x-show="$store.animationSpeed > 0"></span>
           <span x-show="$store.animationSpeed == 0">Disabled</span>
         </div>

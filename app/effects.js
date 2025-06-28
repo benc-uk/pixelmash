@@ -16,6 +16,8 @@ import rgb from '../assets/shaders/rgb.frag.glsl?raw'
 import barrelblur from '../assets/shaders/barrelblur.frag.glsl?raw'
 import glow from '../assets/shaders/glow.frag.glsl?raw'
 import hue from '../assets/shaders/hue.frag.glsl?raw'
+import smear from '../assets/shaders/smear.frag.glsl?raw'
+import mirror from '../assets/shaders/mirror.frag.glsl?raw'
 
 // This is the vertex shader used for all effects
 import libShader from '../assets/shaders/_lib.frag.glsl?raw'
@@ -230,7 +232,6 @@ const effects = {
       },
     },
     fragShader: slice,
-    animated: true,
   },
 
   solarize: {
@@ -294,7 +295,6 @@ const effects = {
       },
     },
     fragShader: melt,
-    animated: true,
   },
 
   warp: {
@@ -323,7 +323,6 @@ const effects = {
       },
     },
     fragShader: warp,
-    animated: true,
   },
 
   ripples: {
@@ -352,18 +351,17 @@ const effects = {
       },
     },
     fragShader: ripples,
-    animated: true,
   },
 
   blur: {
     name: 'blur',
     params: {
-      radius: {
+      samples: {
         type: 'number',
-        value: 5,
-        min: 1,
-        max: 60,
-        step: 0.5,
+        value: 50,
+        min: 4,
+        max: 100,
+        step: 1,
       },
     },
     fragShader: blur,
@@ -472,7 +470,45 @@ const effects = {
       },
     },
     fragShader: hue,
-    animated: true,
+  },
+
+  smear: {
+    name: 'smear',
+    params: {
+      time: {
+        type: 'number',
+        value: 0.5,
+        min: 0.0,
+        max: 1.0,
+        step: 0.01,
+      },
+      amount: {
+        type: 'number',
+        value: 0.02,
+        min: 0.0,
+        max: 0.2,
+        step: 0.01,
+      },
+      style: {
+        type: 'boolean',
+        value: false, // false = RG, true = GB
+      },
+    },
+    fragShader: smear,
+  },
+
+  mirror: {
+    name: 'mirror',
+    params: {
+      axis: {
+        type: 'number',
+        value: 0,
+        min: 0,
+        max: 8,
+        step: 1,
+      },
+    },
+    fragShader: mirror,
   },
 }
 
@@ -510,7 +546,7 @@ export function createEffect(name, gl) {
     frameBuffer, // GL framebuffer for rendering the effect into
     programInfo, // GL program info for rendering the effect shader
     folded: false, // Whether the effect is folded in the UI
-    animated: effectBase.animated || false, // Whether the effect is animated
+    animated: Object.keys(effectBase.params).includes('time'), // Whether the effect has a time parameter for animation
     advancedScript: undefined, // Optional advanced script for the effect
   }
 

@@ -19,7 +19,7 @@ This version is written in JS and uses Vite + Alpine.js for the UI and twgl + We
 - Animated effects
 - Reorder effects
 - Save images
-- Export video (coming soon!)
+- Export video
 
 ## Effects Summary
 
@@ -67,6 +67,12 @@ This version is written in JS and uses Vite + Alpine.js for the UI and twgl + We
 
 - **huesat**  
   Adjusts hue and saturation with angle and saturation controls.
+
+- **mirror**  
+  Mirrors the image across various axes
+
+- **smear**  
+  Smears the image using channel offsets with adjustable strength and speed and mode.
 
 ## Advanced Features
 
