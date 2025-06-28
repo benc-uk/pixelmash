@@ -18,6 +18,7 @@ import glow from '../assets/shaders/glow.frag.glsl?raw'
 import hue from '../assets/shaders/hue.frag.glsl?raw'
 import smear from '../assets/shaders/smear.frag.glsl?raw'
 import mirror from '../assets/shaders/mirror.frag.glsl?raw'
+import squares from '../assets/shaders/squares.frag.glsl?raw'
 
 // This is the vertex shader used for all effects
 import libShader from '../assets/shaders/_lib.frag.glsl?raw'
@@ -509,6 +510,48 @@ const effects = {
       },
     },
     fragShader: mirror,
+  },
+
+  squares: {
+    name: 'squares',
+    params: {
+      size: {
+        type: 'number',
+        value: 0.1,
+        min: 0.02,
+        max: 0.25,
+        step: 0.0001,
+      },
+      displace: {
+        type: 'number',
+        value: 0.5,
+        min: 0.0,
+        max: 1.5,
+        step: 0.01,
+      },
+      hue: {
+        type: 'number',
+        value: 0.0,
+        min: 0.0,
+        max: 1.0,
+        step: 0.01,
+      },
+      value: {
+        type: 'number',
+        value: 0.15,
+        min: 0.0,
+        max: 1.0,
+        step: 0.01,
+      },
+      seed: {
+        type: 'number',
+        value: 3,
+        min: 0.0,
+        max: 20.0,
+        step: 0.5,
+      },
+    },
+    fragShader: squares,
   },
 }
 
