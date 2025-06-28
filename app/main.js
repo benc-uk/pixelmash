@@ -44,7 +44,7 @@ Alpine.data('app', () => ({
     if (import.meta.env.DEV) {
       debug('img/gnt.jpg')
       this.sourceLoaded = true
-      this.addEffect('blur')
+      this.addEffect('squares')
     }
 
     Alpine.store('animationSpeed', 0)
@@ -55,6 +55,19 @@ Alpine.data('app', () => ({
         this.showFPS = !this.showFPS
         Alpine.store('fps', 0)
       }
+    })
+
+    window.addEventListener('fullscreenchange', () => {
+      this.isFullscreen = document.fullscreenElement !== null
+      if (this.isFullscreen) {
+        this.$refs.main.style.width = '100%'
+      } else {
+        this.$refs.main.style.width = 'calc(100% - 220px)' // Reset to default nav width
+      }
+
+      this.$nextTick(() => {
+        resizeCanvas()
+      })
     })
 
     console.log('🎉 Alpine.js initialized and app started')
@@ -70,16 +83,12 @@ Alpine.data('app', () => ({
   /**
    * Toggle fullscreen mode for the app
    */
-  fullscreen() {
+  async fullscreen() {
     if (this.isFullscreen) {
-      document.exitFullscreen()
+      await document.exitFullscreen()
     } else {
-      document.documentElement.requestFullscreen()
+      await document.documentElement.requestFullscreen()
     }
-    this.isFullscreen = !this.isFullscreen
-    this.$nextTick(() => {
-      resizeCanvas()
-    })
   },
 
   /**
@@ -88,7 +97,10 @@ Alpine.data('app', () => ({
    */
   dragNavSizer(event) {
     const newWid = event.clientX
-    if (newWid < 190 || newWid > 600) return
+
+    if (newWid < 190 || newWid > 400) {
+      return
+    }
 
     this.$refs.nav.style.width = `${newWid}px`
     this.$refs.main.style.width = `calc(100% - ${newWid}px)`
@@ -182,18 +194,19 @@ Alpine.data('app', () => ({
       let width = 1920
       let height = 1080
 
-      video.addEventListener('loadeddata', () => {
+      video.addEventListener('loadeddata', async () => {
         if (!video) return
 
         height = video.videoHeight
         width = video.videoWidth
 
         this.sourceLoaded = true
-        setSource(video, width, height)
+        await setSource(video, width, height)
         showToast('Camera video opened!', 2000, 'top-center', 'primary')
         console.log(`📷 Camera video opened with dimensions: ${width}x${height}`)
 
-        resizeCanvas()
+        // Fake a navdrag event to resize the canvas
+        this.dragNavSizer(new DragEvent('drag', { clientX: 220 }))
       })
 
       video.play()
@@ -238,6 +251,11 @@ Alpine.data('app', () => ({
     this.$store.effects = []
     this.sourceLoaded = false
     clearSource()
+    this.$nextTick(() => {
+      resizeCanvas()
+      this.$refs.main.style.width = '100%'
+      this.$refs.nav.style.width = '0px'
+    })
   },
 
   /**
@@ -379,13 +397,13 @@ async function loadFile(file) {
         video.src = /** @type {string} */ (e.target?.result)
         video.loop = true
 
-        video.addEventListener('loadeddata', () => {
+        video.addEventListener('loadeddata', async () => {
           if (!video) return
 
           const width = video.videoWidth
           const height = video.videoHeight
-          setSource(video, width, height)
-          console.log(`📹 Video loaded with dimensions: ${width}x${height}`)
+          await setSource(video, width, height)
+          console.log(`🎥 Video loaded with dimensions: ${width}x${height}`)
           resizeCanvas()
         })
 
@@ -396,8 +414,8 @@ async function loadFile(file) {
         img.src = /** @type {string} */ (e.target?.result)
         img.crossOrigin = 'anonymous' // Handle CORS for remote images
 
-        img.onload = () => {
-          setSource(img, img.width, img.height)
+        img.onload = async () => {
+          await setSource(img, img.width, img.height)
           console.log(`🖼️ Image loaded with dimensions: ${img.width}x${img.height}`)
           resizeCanvas()
         }
