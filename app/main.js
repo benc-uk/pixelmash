@@ -24,10 +24,12 @@ Alpine.data('app', () => ({
   dragEffectIndex: -1,
   showConf: false,
   showAdvancedScript: false,
+  showClear: false,
   isFullscreen: false,
   isCapturing: false,
   effectList,
   showFPS: false,
+  navWidth: 220, // Default width of the navigation panel
 
   /**
    * Initialize the application, everything really starts here
@@ -44,7 +46,7 @@ Alpine.data('app', () => ({
     if (import.meta.env.DEV) {
       debug('img/gnt.jpg')
       this.sourceLoaded = true
-      this.addEffect('squares')
+      this.addEffect('duotone')
     }
 
     Alpine.store('animationSpeed', 0)
@@ -62,13 +64,15 @@ Alpine.data('app', () => ({
       if (this.isFullscreen) {
         this.$refs.main.style.width = '100%'
       } else {
-        this.$refs.main.style.width = 'calc(100% - 220px)' // Reset to default nav width
+        this.$refs.main.style.width = `calc(100% - ${this.navWidth}px)`
       }
 
       this.$nextTick(() => {
         resizeCanvas()
       })
     })
+
+    this.restoreState()
 
     console.log('🎉 Alpine.js initialized and app started')
   },
@@ -104,6 +108,7 @@ Alpine.data('app', () => ({
 
     this.$refs.nav.style.width = `${newWid}px`
     this.$refs.main.style.width = `calc(100% - ${newWid}px)`
+    this.navWidth = newWid
 
     this.$nextTick(() => {
       resizeCanvas()
@@ -245,12 +250,16 @@ Alpine.data('app', () => ({
   },
 
   /**
-   * Clear the current source and reset the application state
+   * Clear the effects and optionally the source image/video
    */
-  clear() {
+  clear(clearImage = true) {
+    this.showClear = false
     this.$store.effects = []
-    this.sourceLoaded = false
-    clearSource()
+    if (clearImage) {
+      this.sourceLoaded = false
+      clearSource()
+    }
+
     this.$nextTick(() => {
       resizeCanvas()
       this.$refs.main.style.width = '100%'
@@ -358,7 +367,7 @@ Alpine.data('app', () => ({
   },
 }))
 
-// Whoooo, begin the Alpine.js magic
+// Whoooo, finally begin the Alpine.js magic
 Alpine.start()
 
 //zzzzeslint-disable-next-line no-unused-vars

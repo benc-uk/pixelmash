@@ -9,7 +9,7 @@
   </head>
 
   <body x-data="app">
-    <nav x-show="sourceLoaded && !isFullscreen" x-ref="nav">
+    <nav x-show="sourceLoaded && !isFullscreen" x-ref="nav" x-cloak>
       <template x-for="(effect, index) in $store.effects" :key="index">
         <section :data-effect-index="index">
           <b
@@ -26,15 +26,7 @@
             <template x-for="(param, name) in effect.params" :key="index + '-' + name">
               <div class="col">
                 <label x-text="name" :for="name + '-' + index"></label>
-                <input
-                  type="range"
-                  x-show="param.type === 'number'"
-                  x-model="param.value"
-                  :min="param.min"
-                  :max="param.max"
-                  :step="param.step"
-                  :readonly="true"
-                />
+                <input type="range" x-show="param.type === 'number'" x-model="param.value" :min="param.min" :max="param.max" :step="param.step" />
                 <input type="color" x-show="param.type === 'colour'" x-model="param.value" />
                 <label class="switch" x-show="param.type === 'boolean'">
                   <input type="checkbox" x-model="param.value" />
@@ -49,8 +41,8 @@
       </template>
 
       <div class="row">
-        <button class="wide" x-show="!pickNewEffect && sourceLoaded" @click="showEffectSelector">
-          <span class="codicon codicon-filter"></span> Add Effect
+        <button class="wide add" x-show="!pickNewEffect && sourceLoaded" @click="showEffectSelector">
+          <i class="codicon codicon-diff-added"></i><span>&nbsp; Add Effect</span>
         </button>
         <select
           x-show="pickNewEffect"
@@ -66,7 +58,7 @@
         </select>
       </div>
       <div class="row">
-        <button class="wide" @click="clear"><span class="codicon codicon-chrome-close icon"></span></button>
+        <button class="wide" @click="showClear = true"><span class="codicon codicon-chrome-close icon"></span></button>
         <button class="wide" @click="showConf = true"><span class="codicon codicon-settings icon"></span></button>
         <button class="wide" @click="save"><span class="codicon codicon-device-camera icon"></span></button>
         <button class="wide" @click="captureVideo" :class="{ red: isCapturing }">
@@ -79,13 +71,14 @@
 
     <main @resize.window="resize(this)" @drop.prevent="dropFile($event)" @dragover.prevent="$event.dataTransfer.dropEffect = 'copy'" x-ref="main">
       <canvas width="800" height="600" x-ref="canvas" x-show="sourceLoaded" @dblclick="fullscreen"></canvas>
-      <aside x-show="!sourceLoaded" @click="promptForFile">
+      <aside x-show="!sourceLoaded" @click="promptForFile" x-cloak>
         <h2>Pixel Mash</h2>
         Drag and drop files here or click to upload
       </aside>
-      <aside x-show="!sourceLoaded" @click="openCamera" class="mt-30">Or use your camera</aside>
 
-      <footer x-show="!sourceLoaded">
+      <aside x-show="!sourceLoaded" @click="openCamera" class="mt-30" x-cloak>Or use your camera</aside>
+
+      <footer x-show="!sourceLoaded" x-cloak>
         <span x-text="`v${version}`"></span> - (C) Ben Coleman 2025 -
         <a href="https://github.com/benc-uk/pixelmash" target="_blank">benc-uk/pixelmash</a>
       </footer>
@@ -113,6 +106,17 @@
       <button class="close" @click="showConf = false">Close</button>
     </dialog>
 
-    <input type="file" accept="image/*,video/*" x-ref="fileInput" @change="fileInputChanged($event)" />
+    <dialog x-show="showClear" @click.outside="showClear = false" open x-cloak>
+      <h2>Clear</h2>
+      <p>Reset and clear, effects and or image/video source</p>
+      <p>Note: To change just the image, drag another over the top</p>
+      <div class="row">
+        <button class="wide mr-5" @click="clear(false)">Clear Effects</button>
+        <button class="wide mr-5" @click="clear(true)">Clear Both</button>
+        <button class="wide" @click="showClear = false">Cancel</button>
+      </div>
+    </dialog>
+
+    <input type="file" accept="image/*,video/*" x-ref="fileInput" @change="fileInputChanged($event)" x-cloak />
   </body>
 </html>

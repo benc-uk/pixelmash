@@ -175,6 +175,17 @@ const effects = {
         max: 3,
         step: 0.01,
       },
+      monotone: {
+        type: 'boolean',
+        value: false, // false = duotone, true = monotone
+      },
+      monotoneThres: {
+        type: 'number',
+        value: 0.4,
+        min: 0.2,
+        max: 0.5,
+        step: 0.001,
+      },
     },
     fragShader: duotone,
   },
@@ -567,7 +578,7 @@ export function effectList() {
  * @param {WebGLRenderingContext} gl
  * @returns {Effect} The effect instance
  */
-export function createEffect(name, gl) {
+export function createEffect(name, gl, defaultParams = {}) {
   if (!effects[name]) {
     throw new Error(`Effect "${name}" not found`)
   }
@@ -592,6 +603,13 @@ export function createEffect(name, gl) {
     animated: Object.keys(effectBase.params).includes('time'), // Whether the effect has a time parameter for animation
     advancedScript: undefined, // Optional advanced script for the effect
   }
+
+  // Set default values for the parameters
+  Object.keys(effect.params).forEach((key) => {
+    if (defaultParams[key] !== undefined) {
+      effect.params[key].value = defaultParams[key]
+    }
+  })
 
   return effect
 }
