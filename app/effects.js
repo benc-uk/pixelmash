@@ -3,6 +3,7 @@ import * as twgl from 'twgl.js'
 import blur from '../assets/shaders/blur.frag.glsl?raw'
 import colourize from '../assets/shaders/colourize.frag.glsl?raw'
 import duotone from '../assets/shaders/duotone.frag.glsl?raw'
+import edgeAlt from '../assets/shaders/edge-alt.frag.glsl?raw'
 import edge from '../assets/shaders/edge.frag.glsl?raw'
 import melt from '../assets/shaders/melt.frag.glsl?raw'
 import pixelate from '../assets/shaders/pixelate.frag.glsl?raw'
@@ -93,8 +94,8 @@ const effects = {
     fragShader: pixelate,
   },
 
-  edge: {
-    name: 'edge',
+  'edge-alt': {
+    name: 'edge-alt',
     params: {
       threshold: {
         type: 'number',
@@ -126,7 +127,7 @@ const effects = {
         value: false,
       },
     },
-    fragShader: edge,
+    fragShader: edgeAlt,
   },
 
   scanlines: {
@@ -564,8 +565,36 @@ const effects = {
     },
     fragShader: squares,
   },
+
+  edge: {
+    name: 'edge',
+    params: {
+      threshold: {
+        type: 'number',
+        value: 0.1,
+        min: 0,
+        max: 1.0,
+        step: 0.001,
+      },
+      size: {
+        type: 'number',
+        value: 3,
+        min: 0.3,
+        max: 10,
+        step: 0.01,
+      },
+      colour: {
+        type: 'colour',
+        value: '#78e24b',
+      },
+    },
+    fragShader: edge,
+  },
 }
 
+/** Get a list of all available effects
+ * @returns {string[]} List of effect names sorted by name
+ */
 export function effectList() {
   return Object.keys(effects).sort((a, b) => {
     return effects[a].name.localeCompare(effects[b].name)
