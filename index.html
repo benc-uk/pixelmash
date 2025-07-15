@@ -102,6 +102,15 @@
             <span class="slider round"></span>
           </label>
         </div>
+        <div class="col mt-20" x-show="cameras.length > 0">
+          <label for="camera">Camera</label>
+          <select id="camera" @change="cameraChanged">
+            <option value="" disabled selected>Select</option>
+            <template x-for="(camera, index) in cameras" :key="index">
+              <option :value="camera.id" x-text="camera.name"></option>
+            </template>
+          </select>
+        </div>
       </form>
       <button class="close" @click="showConf = false">Close</button>
     </dialog>

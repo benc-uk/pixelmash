@@ -30,6 +30,8 @@ Alpine.data('app', () => ({
   effectList,
   showFPS: false,
   navWidth: 220, // Default width of the navigation panel
+  /** @type {Array<Object>} */
+  cameras: [],
 
   /**
    * Initialize the application, everything really starts here
@@ -43,11 +45,11 @@ Alpine.data('app', () => ({
     this.resize()
 
     // For debugging & dev - when running locally in dev mode
-    if (import.meta.env.DEV) {
-      debug('img/gnt.jpg')
-      this.sourceLoaded = true
-      this.addEffect('duotone')
-    }
+    // if (import.meta.env.DEV) {
+    //   debug('img/gnt.jpg')
+    //   this.sourceLoaded = true
+    //   this.addEffect('edge2')
+    // }
 
     Alpine.store('animationSpeed', 0)
 
@@ -71,8 +73,6 @@ Alpine.data('app', () => ({
         resizeCanvas()
       })
     })
-
-    this.restoreState()
 
     console.log('🎉 Alpine.js initialized and app started')
   },
@@ -184,21 +184,44 @@ Alpine.data('app', () => ({
   /**
    * Open the camera and start streaming video
    * This will create a video element and set it as the source for rendering
+   * @param {Event | null} _evt
+   * @param {Object} camera
    */
-  async openCamera() {
+  async openCamera(_evt, camera = null) {
+    // Enumerate devices
+    try {
+      if (camera === null) {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        for (const device of devices) {
+          if (device.kind !== 'videoinput') continue
+          // @ts-ignore
+          this.cameras.push({ id: device.deviceId, name: device.label, capabilities: device.getCapabilities() })
+        }
+
+        if (this.cameras.length < 1) throw Error('No cameras detected')
+        camera = this.cameras[0]
+      }
+    } catch (error) {
+      console.error('Error accessing camera:', error)
+      alert('Could not access camera. Please check permissions.')
+    }
+
+    if (!camera) return
+    console.log(camera)
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          deviceId: { exact: camera.id },
+          width: { ideal: Math.min(1920, camera.capabilities.width.max) },
+          height: { ideal: Math.min(1080, camera.capabilities.height.max) },
         },
       })
+
       video = document.createElement('video')
       video.srcObject = stream
 
-      let width = 1920
-      let height = 1080
-
+      let width, height
       video.addEventListener('loadeddata', async () => {
         if (!video) return
 
@@ -207,8 +230,8 @@ Alpine.data('app', () => ({
 
         this.sourceLoaded = true
         await setSource(video, width, height)
-        showToast('Camera video opened!', 2000, 'top-center', 'primary')
-        console.log(`📷 Camera video opened with dimensions: ${width}x${height}`)
+        showToast(`Camera started (${width}x${height})`, 2000, 'top-center', 'primary')
+        console.log(`📷 Camera stream opened: ${width}x${height}`)
 
         // Fake a navdrag event to resize the canvas
         this.dragNavSizer(new DragEvent('drag', { clientX: 220 }))
@@ -219,6 +242,13 @@ Alpine.data('app', () => ({
       console.error('Error accessing camera:', error)
       alert('Could not access camera. Please check permissions.')
     }
+  },
+
+  async cameraChanged(event) {
+    const camera = this.cameras[event.target.selectedIndex - 1]
+    if (!camera) return
+
+    this.openCamera(null, camera)
   },
 
   /**
@@ -370,7 +400,7 @@ Alpine.data('app', () => ({
 // Whoooo, finally begin the Alpine.js magic
 Alpine.start()
 
-//zzzzeslint-disable-next-line no-unused-vars
+//eslint-disable-next-line no-unused-vars
 async function debug(imageURL) {
   const res = await fetch(imageURL)
   const blob = await res.blob()
