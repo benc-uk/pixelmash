@@ -45,11 +45,11 @@ Alpine.data('app', () => ({
     this.resize()
 
     // For debugging & dev - when running locally in dev mode
-    if (import.meta.env.DEV) {
-      debug('img/gnt.jpg')
-      this.sourceLoaded = true
-      this.addEffect('edge')
-    }
+    // if (import.meta.env.DEV) {
+    //   debug('img/gnt.jpg')
+    //   this.sourceLoaded = true
+    //   this.addEffect('edge')
+    // }
 
     Alpine.store('animationSpeed', 0)
 
