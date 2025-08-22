@@ -176,6 +176,17 @@ function renderLoop() {
       twgl.bindFramebufferInfo(gl, effect.frameBuffer)
     }
 
+    // If the effect is disabled, use the passthrough shader instead
+    if (!effect.enabled) {
+      gl.useProgram(passThroughProgInfo.program)
+      twgl.setBuffersAndAttributes(gl, passThroughProgInfo, quadBuffers)
+      twgl.setUniforms(passThroughProgInfo, uniforms)
+      twgl.drawBufferInfo(gl, quadBuffers, gl.TRIANGLES)
+
+      // Skip to the next effect
+      continue
+    }
+
     // Process the effect's parameters and convert them to uniforms
     const effectUniforms = Object.entries(effect.params).reduce((acc, [key, param]) => {
       if (param.type === 'colour') {
@@ -205,6 +216,7 @@ function renderLoop() {
       }
     }
 
+    // Render the effect
     twgl.setBuffersAndAttributes(gl, effect.programInfo, quadBuffers)
     twgl.setUniforms(effect.programInfo, {
       ...uniforms,

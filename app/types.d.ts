@@ -15,4 +15,5 @@ declare type Effect = {
   folded: boolean
   animated: boolean
   advancedScript?: string
+  enabled: boolean
 }

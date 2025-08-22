@@ -45,11 +45,11 @@ Alpine.data('app', () => ({
     this.resize()
 
     // For debugging & dev - when running locally in dev mode
-    // if (import.meta.env.DEV) {
-    //   debug('img/gnt.jpg')
-    //   this.sourceLoaded = true
-    //   this.addEffect('edge2')
-    // }
+    if (import.meta.env.DEV) {
+      debug('img/gnt.jpg')
+      this.sourceLoaded = true
+      this.addEffect('edge')
+    }
 
     Alpine.store('animationSpeed', 0)
 
@@ -394,6 +394,12 @@ Alpine.data('app', () => ({
     mediaRecorder.start()
     showToast('Recording started. Click again to stop & save', 2000, 'top-center', 'primary')
     this.isCapturing = true
+  },
+
+  toggleEffect(index) {
+    const effect = this.$store.effects[index]
+    if (!effect) return
+    effect.enabled = !effect.enabled
   },
 }))
 

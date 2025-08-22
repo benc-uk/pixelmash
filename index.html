@@ -19,8 +19,13 @@
             @drop="dragEffectDrop(index)"
             @click="effect.folded = !effect.folded"
           >
-            <span x-text="effect.name"></span>
-            <button class="tiny" @click.stop="removeEffect(index)">⨯</button>
+            <span x-text="effect.name" class="grow" :class="effect.enabled || 'disabled'"></span>
+            <button class="tiny" :class="effect.enabled || 'red'" @click.stop="toggleEffect(index)">
+              <span class="codicon codicon-lightbulb icon-sm"></span>
+            </button>
+            <button class="tiny" @click.stop="removeEffect(index)">
+              <span class="codicon codicon-chrome-close icon-sm"></span>
+            </button>
           </b>
           <form x-show="!effect.folded">
             <template x-for="(param, name) in effect.params" :key="index + '-' + name">

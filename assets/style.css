@@ -69,7 +69,8 @@ section b {
   display: block;
   background-color: var(--med);
   cursor: pointer;
-  color: var(--vlight);
+  color: white;
+  display: flex;
 }
 
 form {
@@ -186,8 +187,16 @@ button:hover {
 }
 
 .tiny {
-  padding: 0px 4px;
-  float: right;
+  padding: 4px 4px 1px 4px;
+  margin-right: 2px;
+}
+
+.grow {
+  flex-grow: 1;
+}
+
+.disabled {
+  color: var(--light);
 }
 
 input[type='file']::file-selector-button {
@@ -272,6 +281,10 @@ textarea {
 
 .icon {
   font-size: 1.5rem !important;
+}
+
+.icon-sm {
+  font-size: 0.9rem !important;
 }
 
 .red {

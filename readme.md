@@ -1,12 +1,12 @@
 # Pixel Mash
 
-Pixel Mash is a homage and reimagining of the tool [Mosh Lite](https://moshpro.app/lite/).
+Pixel Mash is a homage and re-imagining of the [Mosh Lite](https://moshpro.app/lite/) tool.
 
-It is an image manipulation tool which uses WebGL shaders to apply various effects to images and videos. It allows you to manipulate images in real-time, applying effects like pixelation, glitch, and more. You can also use it to process live camera input.
+At the core it's an image manipulation tool which uses WebGL shaders to apply various effects to images and videos. It allows you to manipulate images in real-time, applying effects like pixelation, glitch, and more. You can also use it to process live camera input.
 
-This version is written in JS and uses Vite + Alpine.js for the UI and twgl + WebGL for the image processing
+My version is written in modern ESM/JS and uses Vite + [Alpine.js](https://alpinejs.dev/) for the UI, and uses [twgl](https://twgljs.org/) + WebGL for the image processing
 
-![Screenshot of Pixel Mash](./.github/chrome_U1MYcKi6Cm.jpg)
+![Screenshot of Pixel Mash](./.github/image.png)
 
 [![CI - Check, Build and Deploy](https://github.com/benc-uk/pixelmash/actions/workflows/ci-build.yaml/badge.svg)](https://github.com/benc-uk/pixelmash/actions/workflows/ci-build.yaml)
 
@@ -17,8 +17,8 @@ This version is written in JS and uses Vite + Alpine.js for the UI and twgl + We
 - Camera support for live image manipulation
 - Can upload both images and videos
 - Animated effects
-- Reorder effects
-- Save images
+- Reorder & disable/enable effects to try different combinations
+- Save result as image
 - Export video
 
 ## Effects Summary

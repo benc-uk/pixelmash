@@ -631,6 +631,7 @@ export function createEffect(name, gl, defaultParams = {}) {
     folded: false, // Whether the effect is folded in the UI
     animated: Object.keys(effectBase.params).includes('time'), // Whether the effect has a time parameter for animation
     advancedScript: undefined, // Optional advanced script for the effect
+    enabled: true, // Whether the effect is enabled
   }
 
   // Set default values for the parameters
